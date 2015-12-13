@@ -14,7 +14,7 @@
 
 
 
-#define TWI_SPEED				400000 //100KHZ default
+#define TWI_SPEED				100000//100KHZ default
 
 
 /********/

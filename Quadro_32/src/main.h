@@ -118,6 +118,14 @@ typedef struct{
 	//float Temp;
 }RF_Queue;
 
+/* MPU9150*/
+typedef struct{
+	
+	short MPU_FIFO[1024];
+	short temp;
+
+}MPU9150_Queue;
+
 /************************************************************************/
 //LCD
 

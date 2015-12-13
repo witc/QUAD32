@@ -14,6 +14,7 @@
 
 void Senzor_Task(void *pvParameters);
 void Mag_init(void);
+void MPU_TimerCallback(xTimerHandle pxTimer);
 
 
 

@@ -72,6 +72,7 @@ void board_init(void)
 	gpio_configure_pin(I2C_SDA_PIN, TWI0_DATA_FLAGS);
 		
 	ioport_set_pin_dir(PERIODE_PIN,1);
+	ioport_set_pin_dir(PERIODE_PIN_INT,1);
 	
 	ioport_set_pin_dir(USART_TXD_PIN, IOPORT_DIR_OUTPUT);
 	

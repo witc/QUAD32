@@ -11,7 +11,9 @@ xTaskHandle		Sx1276_id;
 xTaskHandle		Senzor_id;
 
 volatile	xQueueHandle		Queue_RF_Task;
+volatile	xQueueHandle		Queue_Senzor_Task;
 
+volatile xTimerHandle MPU_Timer;
 
 /*NIRQ0 - From RF Semtech - RX Done*/
 void Semtech_IRQ0(void)
@@ -140,12 +142,17 @@ int main (void)
 //  	};
 //  	usart_serial_init(USART_SERIAL, &usart_options);
 // 		
+
+	/* Create timer */
+	MPU_Timer=xTimerCreate("Timer_MPU",100,pdTRUE,0,MPU_TimerCallback);
+	
 	Queue_RF_Task=xQueueCreate(3,sizeof(RF_Queue));
+	Queue_Senzor_Task=xQueueCreate(2,sizeof(MPU9150_Queue));
 		
 	/*Create Semtech Task*/
 	xTaskCreate(RF_Task,"sx1276",configMINIMAL_STACK_SIZE+500,NULL, 1,&Sx1276_id);
 	/*Create Compass Task*/
-	xTaskCreate(Senzor_Task,"Senzor",configMINIMAL_STACK_SIZE+400,NULL, 1,&Senzor_id);
+	xTaskCreate(Senzor_Task,"Senzor",configMINIMAL_STACK_SIZE+600,NULL, 2,&Senzor_id);
 	
 	
 	vTaskStartScheduler();

@@ -69,19 +69,25 @@ void MPU6050_Initialize()
 {	
 	
 	unsigned char data[6];
-
+	
+	
+	while(!MPU6050_TestConnection())
+	{
+		/*MPU6050_GetDeviceID();*/
+	}
+	
     /* Reset device. */
     data[0] = BIT_RESET;
 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
-    delay_ms(200);
-
+	
+	
+    vTaskDelay(200/portTICK_RATE_MS);
+	
+	 
     /* Wake up chip. */
-    data[0] = 0x00;
-    MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
+//     data[0] = 0x00;
+//     MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
 
-	/* FIFO set */
-	
-	
 	/*set clock */
 	 MPU6050_SetClockSource(MPU6050_CLOCK_PLL_XGYRO );	// zkontrolovat, zda nechybí ještì nìjaké nastavení hodin
 	
@@ -93,27 +99,22 @@ void MPU6050_Initialize()
     MPU6050_SetFullScaleAccelRange(MPU6050_ACCEL_FS_4);
 	
    /*set LPF and Fs to 8khz - internal */
-   data[0]=1;	/* 10Hz cut off*/
+   data[0]=4;	/* 4=21Hz cut off*/
    MPU6050_I2C_ByteWrite(10,&data[0], MPU6050_RA_CONFIG);
    
-//      data[0]=1;	/* 10Hz cut off*/
-//      MPU6050_I2C_ByteWrite(10,&data[0], 0x1A);
-  
-//     setup_compass();
-//     if (mpu_set_compass_sample_rate(100))
-//         return -1;
+     /* Wake up chip. */
+    data[0] = 0x00;
+    MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
+	
+	 /* Fifo enable */
+	 data[0] =(1<<6);
+	 MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_USER_CTRL );
+	 /* Enable Fifo, GYRO */
+	 //  data[0]=0b01110000;
+	 data[0]=0xFF;
+	 MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_FIFO_EN);
+	// setSleepEnabled(false); // thanks to Jack Elston for pointing this one out!
 
-	while(!MPU6050_TestConnection())
-	{
-		/*MPU6050_GetDeviceID();*/
-	}
-// 	
-//	vTaskDelay(10/portTICK_RATE_MS);
-// 		MPU
-// 	 MPU6050_SetClockSource(MPU6050_CLOCK_PLL_XGYRO);
-// 	 MPU6050_SetFullScaleGyroRange(MPU6050_GYRO_FS_2000);
-// 	 MPU6050_SetFullScaleAccelRange(MPU6050_ACCEL_FS_4
-	// MPU6050_SetSleepEnabled(false); // thanks to Jack Elston for pointing
 }
 
 /** Verify the I2C connection.
@@ -449,6 +450,37 @@ void MPU9150_getMotion6(short* ax, short* ay, short* az, short* gx, short* gy, s
     *gx = ((((short)buffer[8]) << 8) | buffer[9])-offset[0];
     *gy = ((((short)buffer[10]) << 8) | buffer[11])-offset[1];
     *gz = ((((short)buffer[12]) << 8) | buffer[13])-offset[2];
+}
+
+/* FIFO DATA */
+short MPU9150_getMotion6_fifo(short* FIFO_MPU,short *offset)
+{	
+	uint8_t data[2];
+	short temp=0;
+	static uint8_t buffer[1024];
+	short i=0;
+	MPU6050_I2C_BufferRead(MPU6050_DEFAULT_ADDRESS,data, MPU6050_RA_FIFO_COUNTH, 2);
+	temp=(short)((data[0]<<8)|data[1]);
+	
+
+ 		MPU6050_I2C_BufferRead(MPU6050_DEFAULT_ADDRESS,buffer,MPU6050_RA_FIFO_R_W   , temp);
+ 	
+	
+	 for ( i=0;i<170;i++)
+ 	{	
+		 FIFO_MPU[i] =(((short)buffer[i]) << 8) | buffer[i+1];
+		 FIFO_MPU[i+1] =(((short)buffer[i+2]) << 8) | buffer[i+3];
+		 FIFO_MPU[i+2] =(((short)buffer[i+4]) << 8) | buffer[i+5];
+// 		 
+//  		FIFO_MPU[i++] = (((short)buffer[0]) << 8) | buffer[1];
+//  		FIFO_MPU[i++] = (((short)buffer[2]) << 8) | buffer[3];
+//  		FIFO_MPU[i++] = (((short)buffer[4]) << 8) | buffer[5];
+//  		FIFO_MPU[i++]= ((((short)buffer[8]) << 8) | buffer[9])-offset[0];
+//  		FIFO_MPU[i++] = ((((short)buffer[10]) << 8) | buffer[11])-offset[1];
+//  		FIFO_MPU[i++] = ((((short)buffer[12]) << 8) | buffer[13])-offset[2
+ 	}
+	//	FIFO_MPU[i]=0; /* ukonèení*/
+	return temp;
 }
 
 
