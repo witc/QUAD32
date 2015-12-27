@@ -29,60 +29,67 @@ extern volatile xTimerHandle MPU_Timer;
 volatile short offset[4]={0,0,0,0};
 	
 extern fourthOrderData_t fourthOrder1000Hz[6];	//MAg and accel 3 axis
+ 	MPU9150_Queue GL_XYZ;
+
 
 void MPU_TimerCallback(xTimerHandle pxTimer)
 {	
- 	MPU9150_Queue XYZ;
-	if(xTimerStopFromISR(MPU_Timer,pdPASS)!=pdPASS){};
+	//if(xTimerStopFromISR(MPU_Timer,pdPASS)!=pdPASS){};
 		
+	//ioport_set_pin_level(PERIODE_PIN,true);
+	GL_XYZ.temp=MPU9150_getMotion6_fifo(&GL_XYZ.MPU_FIFO[0],offset);
 	ioport_toggle_pin_level(PERIODE_PIN);
-	XYZ.temp=MPU9150_getMotion6_fifo(XYZ.MPU_FIFO,offset);
-	//ioport_toggle_pin_level(PERIODE_PIN);
 	
-	if(xQueueSendFromISR(Queue_Senzor_Task,&XYZ,1)!=pdPASS);
-	{
-		
-	}
+	//ioport_set_pin_level(PERIODE_PIN,false);
+	
+// 	if(xQueueSendFromISR(Queue_Senzor_Task,&XYZ,1)!=pdPASS);
+// 	{
+// 		
+// 	}
 	
 	
 }
 
-// void MPU9150_INT()
-// {	
-// 	MPU9150_Queue XYZ;
-// 	
-// 	//MPU9150_Queue d
-// 	NVIC_ClearPendingIRQ(PIOB_IRQn);
-// 	/*xTaskResumeFromISR(Senzor_id);*/
-// 	ioport_toggle_pin_level(PERIODE_PIN_INT);	
-// 	MPU9150_getMotion6(&XYZ.AccXYZ[0],&XYZ.AccXYZ[1],&XYZ.AccXYZ[2],&XYZ.GyroXYZ[0],&XYZ.GyroXYZ[1],&XYZ.GyroXYZ[2],offset);
-// 	
-// 	
+void MPU9150_INT()
+{	
+	MPU9150_Queue XYZ;
+	uint8_t data[2];
+	
+	//MPU9150_Queue d
+	NVIC_ClearPendingIRQ(PIOB_IRQn);
+	/*xTaskResumeFromISR(Senzor_id);*/
+
+	ioport_toggle_pin_level(PERIODE_PIN);
+	
+	XYZ.temp=MPU9150_getMotion6_fifo(XYZ.MPU_FIFO,offset);
+	data[0]=0x4;
+	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_USER_CTRL );
+	
+	//ioport_toggle_pin_level(PERIODE_PIN);
+		
+ 	if(xQueueSendFromISR(Queue_Senzor_Task,&XYZ,1)!=pdPASS);
+ 	{
+ 			
+ 	}
+	
 // 		
 //  	if(xQueueSendFromISR(Queue_Senzor_Task,&XYZ,10)!=pdPASS);
 //  	{
 //  		
 //  	}
-// }
+}
 
 void INT_init()
 {
-// 	pmc_enable_periph_clk(ID_PIOB);
-// 	
-// 	//pio_set_input(PIOA, PIO_PA17, PIO_PULLUP);
-// //	pio_set_input(PIOA, PIO_PA18, PIO_PULLUP);
-// //	pio_set_input(PIOA, PIO_PA24, PIO_PULLUP);
-// 	
-// 	//pio_handler_set(PIOA, ID_PIOA, PIO_PA18, PIO_IT_RISE_EDGE, Semtech_IRQ0);
-// 	//pio_handler_set(PIOA, ID_PIOA, PIO_PA17, PIO_IT_RISE_EDGE, Semtech_IRQ1);
-// 	pio_handler_set(PIOB, ID_PIOB, PIO_PB0, PIO_IT_RISE_EDGE, MPU9150_INT);
-// 	
-// 	//pio_enable_interrupt(PIOA, PIO_PA17);
-// 	//pio_enable_interrupt(PIOA, PIO_PA18);
-// 	pio_enable_interrupt(PIOB, PIO_PB0);
-// 	
-// 	NVIC_EnableIRQ(PIOB_IRQn);
-// 	NVIC_SetPriority(PIOB_IRQn,2);
+	pmc_enable_periph_clk(ID_PIOB);
+	
+
+	pio_handler_set(PIOB, ID_PIOB, PIO_PB0, PIO_IT_RISE_EDGE, MPU9150_INT);
+	
+	pio_enable_interrupt(PIOB, PIO_PB0);
+	
+	NVIC_EnableIRQ(PIOB_IRQn);
+	NVIC_SetPriority(PIOB_IRQn,2);
 }
 
 void Senzor_Task(void *pvParameters)
@@ -108,12 +115,12 @@ void Senzor_Task(void *pvParameters)
 	twi_init();
 	taskEXIT_CRITICAL();
 	
-	delay_ms(500);
 	MPU6050_Initialize();
-	delay_ms(1000);
-	MPU9150_Gyro_Tempr_Bias(offset);
+
+
 	
-	//INT_init();
+	
+//	INT_init();
 // 	short GyroXYZ[80][3];
 // 	short AccXYZ[80][3];
 	
@@ -139,20 +146,20 @@ void Senzor_Task(void *pvParameters)
 	{	
 		
  		if(xQueueReceive(Queue_Senzor_Task,&XYZ,portMAX_DELAY)==pdPASS)
- 		{	
-			 for (short i=0;i<1;i++)
-			 {
-				GyroXYZ[0]=XYZ.MPU_FIFO[i] ;
-				GyroXYZ[1]=XYZ.MPU_FIFO[i+1] ;
-				GyroXYZ[2]=XYZ.MPU_FIFO[i+2];
-				
-				//
-				//usart_serial_write_packet(BOARD_USART,&Semtech.Buffer[0],6);
+  		{	
+// 			 for (short i=0;i<1;i++)
+// 			 {
+// 				GyroXYZ[0]=XYZ.MPU_FIFO[i] ;
+// 				GyroXYZ[1]=XYZ.MPU_FIFO[i+1] ;
+// 				GyroXYZ[2]=XYZ.MPU_FIFO[i+2];
+// 				
+// 				//
+// 				//usart_serial_write_packet(BOARD_USART,&Semtech.Buffer[0],6);
 			
 				
 			 }
 			  
-			if(xTimerStart(MPU_Timer,0)!=pdPASS){}
+		//	if(xTimerStart(MPU_Timer,0)!=pdPASS){}
 			
 			temp[0]=(short)(GyroXYZ[0]);
 			temp[1]=(short)(GyroXYZ[1]);
@@ -166,12 +173,16 @@ void Senzor_Task(void *pvParameters)
 			Semtech.Buffer[5]=(uint8_t)( temp[2]>>8);
 			
 			Semtech.Stat.Data_State=RFLR_STATE_TX_INIT;
-			Semtech.Stat.Cmd=STAY_IN_STATE;
-			if(xQueueSend(Queue_RF_Task,&Semtech,1))	//pdPASS=1-
-			{
-					
-			}
-		 }
+			Semtech.Stat.Cmd=STAY_IN_STATE;	
+		
+	}
+}
+
+// 			if(xQueueSend(Queue_RF_Task,&Semtech,1))	//pdPASS=1-
+// 			{
+// 					
+// 			}
+	//	 }
 // 				
 // 		ioport_toggle_pin_level(PERIODE_PIN);
 // 		
@@ -236,8 +247,7 @@ void Senzor_Task(void *pvParameters)
 	//}
 		
 		
-	}
-}
+
   
   /*
   

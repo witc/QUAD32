@@ -121,7 +121,7 @@ typedef struct{
 /* MPU9150*/
 typedef struct{
 	
-	short MPU_FIFO[1024];
+	uint8_t MPU_FIFO[1024];
 	short temp;
 
 }MPU9150_Queue;

@@ -32,7 +32,7 @@ void MPU_9150_send(unsigned char Adress, unsigned char *Data, unsigned char Leng
 }
 /**************************************/
 
-void MPU_9150_read(unsigned char Adress, unsigned char *Data, unsigned char Length)
+void MPU_9150_read(unsigned char Adress, unsigned char *Data, short Length)
 {	
 	taskENTER_CRITICAL();
 

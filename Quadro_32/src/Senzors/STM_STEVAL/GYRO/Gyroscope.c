@@ -159,12 +159,14 @@ void computeGyroRTBias(void)
 void initGyro(void)
 {
 	L3GInit L3GInitStructure;
+	L3GFifoInit L3G_Fifo_Init;
+	uint8_t data=0;
 	
 	/* Fill the gyro structure */
 	L3GInitStructure.xPowerMode = L3G_NORMAL_SLEEP_MODE;
-	L3GInitStructure.xOutputDataRate =   L3G_ODR_760_HZ_CUTOFF_100;
+	L3GInitStructure.xOutputDataRate =   L3G_ODR_760_HZ_CUTOFF_30;
 	L3GInitStructure.xEnabledAxes = L3G_ALL_AXES_EN;
-	L3GInitStructure.xFullScale = L3G_FS_500_DPS;
+	L3GInitStructure.xFullScale = L3G_FS_2000_DPS;
 	L3GInitStructure.xDataUpdate = L3G_BLOCK_UPDATE;
 	L3GInitStructure.xEndianness = L3G_BIG_ENDIAN;
 
@@ -172,7 +174,20 @@ void initGyro(void)
 	L3gd20Config(&L3GInitStructure);
 	
 	delay_ms(10);
-
+	
+	/*FIfo init to Stream mode */
+	L3G_Fifo_Init.cWtm=15;
+	L3G_Fifo_Init.xFifoMode=L3G_STREAM_MODE;
+	L3gd20FifoInit(&L3G_Fifo_Init);
+	
+	//HP filter set  + INT FIFO watermark */
+	data=(1<<4)|(1<<0)|(1<<2)|(1<<3);
+	Gyro_send(0x22,&data,1);
+	
+	/* Hp enable */
+	Gyro_read(0x24,&data,1);
+	data|=0x71;
+	Gyro_send(0x24,&data,1);
 	//computeGyroRTBias();
 }
 

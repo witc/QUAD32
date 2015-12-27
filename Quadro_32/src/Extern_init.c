@@ -21,6 +21,7 @@
 void twi_init(void)
 {
 
+	vTaskDelay(10/portTICK_RATE_MS);
 		
 	 twi_master_options_t opt = {
 		 .speed = TWI_SPEED,
@@ -28,9 +29,10 @@ void twi_init(void)
 	 };
 	 
 	twi_master_setup(TWI0, &opt);
-	delay_ms(10);
+	vTaskDelay(10/portTICK_RATE_MS);
  //	twi_master_init(&TWI0, &opt);
  	twi_master_enable(TWI0);
+	 vTaskDelay(200/portTICK_RATE_MS);
 }
 
 

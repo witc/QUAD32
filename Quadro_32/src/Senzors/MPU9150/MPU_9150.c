@@ -8,6 +8,7 @@
 #include <asf.h>
 #include "MPU_9150.h"
 #include "MPU_9150_HAL.h"
+#include "L3gx.h"
 
 /* Hardware registers needed by driver. */
 struct gyro_reg_s {
@@ -58,6 +59,8 @@ struct gyro_reg_s {
 	#endif
 };
 
+
+
 /** Power on and prepare for general usage.
  * This will activate the device and take it out of sleep mode (which must be done
  * after start-up). This function also sets both the accelerometer and the gyroscope
@@ -70,50 +73,79 @@ void MPU6050_Initialize()
 	
 	unsigned char data[6];
 	
+    /* Reset device. */
+    data[0] = BIT_RESET;
+	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
+	
+	vTaskDelay(30/portTICK_RATE_MS);
 	
 	while(!MPU6050_TestConnection())
 	{
 		/*MPU6050_GetDeviceID();*/
 	}
 	
-    /* Reset device. */
-    data[0] = BIT_RESET;
-	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
 	
-	
-    vTaskDelay(200/portTICK_RATE_MS);
-	
+	 /* Wake up chip. */
+	 data[0] = 0x00;
+	 MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
 	 
-    /* Wake up chip. */
-//     data[0] = 0x00;
-//     MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
-
 	/*set clock */
-	 MPU6050_SetClockSource(MPU6050_CLOCK_PLL_XGYRO );	// zkontrolovat, zda nechybí ještì nìjaké nastavení hodin
-	
-	/*set CFG - INT, bypass,..*/
-   //	 data[0]=
-	
+	 MPU6050_SetClockSource(MPU6050_CLOCK_PLL_ZGYRO );	// 
+	 
+	/*set LPF and Fs to 8khz - internal */
+	data[0]=4;	/* 4=21Hz cut off*/
+	MPU6050_I2C_ByteWrite(10,&data[0], MPU6050_RA_CONFIG);
+	  
+	 /* set sample rate */
+	data[0]=1;
+	MPU6050_I2C_ByteWrite(10,data,MPU6050_RA_SMPLRT_DIV); // 1khz / (1 + 3) =
+			
 	/* Set citlivost */
     MPU6050_SetFullScaleGyroRange(MPU6050_GYRO_FS_2000);
     MPU6050_SetFullScaleAccelRange(MPU6050_ACCEL_FS_4);
 	
-   /*set LPF and Fs to 8khz - internal */
-   data[0]=4;	/* 4=21Hz cut off*/
-   MPU6050_I2C_ByteWrite(10,&data[0], MPU6050_RA_CONFIG);
-   
-     /* Wake up chip. */
-    data[0] = 0x00;
-    MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
+// 	 /* Wake up chip. */
+ 	 data[0] = 0x00;
+ 	 MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
+// 	 	   	
+	/* Fifo enable + FIFO reset */
+ 	data[0] =0x44;
+ 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_USER_CTRL );
 	
-	 /* Fifo enable */
-	 data[0] =(1<<6);
-	 MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_USER_CTRL );
-	 /* Enable Fifo, GYRO */
-	 //  data[0]=0b01110000;
-	 data[0]=0xFF;
-	 MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_FIFO_EN);
-	// setSleepEnabled(false); // thanks to Jack Elston for pointing this one out!
+	/* Enable Fifo, GYRO, Temp and Acc*/
+ 	data[0]=0xF8;
+ 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_FIFO_EN);
+
+	/* Data ready interrupts enabled*/
+//  	data[0]=0x10;
+//  	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_INT_ENABLE);
+	
+	
+	/* Fifo reset */
+	data[0]=0x4;	
+ 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_USER_CTRL );
+ 	
+	
+// 	while (temp!=0)
+// 	{
+// 		FIFO_MPU[i++] =(((short)buffer[0]) << 8) | buffer[1];
+// 		FIFO_MPU[i++] =(((short)buffer[2]) << 8) | buffer[3];
+// 		FIFO_MPU[i++] =(((short)buffer[4]) << 8) | buffer[5];
+// 		temp-=6;
+// 	}
+	
+// 	/* Fifo enable + FIFO reset */
+// 	data[0] =0x44;
+// 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_USER_CTRL );
+// 	
+// 	/* Enable Fifo, GYRO */
+// 	data[0]=0xF8;
+// 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_FIFO_EN);
+// 
+// 	/* Data ready interrupts enabled*/
+// 	data[0]=0x1;
+// 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_INT_ENABLE);
+// setSleepEnabled(false); // thanks to Jack Elston for pointing this one out!
 
 }
 
@@ -400,10 +432,10 @@ void MPU6050_I2C_ByteWrite(uint8_t slaveAddr, uint8_t* pBuffer, uint8_t writeAdd
 void MPU6050_I2C_BufferRead(uint8_t slaveAddr, uint8_t* pBuffer, uint8_t readAddr, short NumByteToRead)
 {
     // ENTR_CRT_SECTION();
-// 	for (short i=0;i<NumByteToRead;i++)
-// 	{
+ //	for (short i=0;i<NumByteToRead;i++)
+ //	{
 		MPU_9150_read(readAddr,&pBuffer[0],NumByteToRead);	
-//	}
+	//}
 	
     
 }
@@ -455,22 +487,32 @@ void MPU9150_getMotion6(short* ax, short* ay, short* az, short* gx, short* gy, s
 /* FIFO DATA */
 short MPU9150_getMotion6_fifo(short* FIFO_MPU,short *offset)
 {	
-	uint8_t data[2];
-	short temp=0;
-	static uint8_t buffer[1024];
+	
+	short temp;
+//	static uint8_t buffer[1024];
 	short i=0;
-	MPU6050_I2C_BufferRead(MPU6050_DEFAULT_ADDRESS,data, MPU6050_RA_FIFO_COUNTH, 2);
-	temp=(short)((data[0]<<8)|data[1]);
 	
-
- 		MPU6050_I2C_BufferRead(MPU6050_DEFAULT_ADDRESS,buffer,MPU6050_RA_FIFO_R_W   , temp);
+// 	buffer[0]=0;
+// 	MPU6050_I2C_ByteWrite(10,buffer,MPU6050_RA_FIFO_EN);
+	/* read count of Fifo */
+	MPU6050_I2C_BufferRead(10,FIFO_MPU,MPU6050_RA_FIFO_COUNTH,2);
+	temp=(((short)FIFO_MPU[0]) << 8) | FIFO_MPU[1];
  	
+	  /* Wake up chip. */
+	  FIFO_MPU[0] = 0x00;
+	  MPU6050_I2C_ByteWrite(10,&FIFO_MPU[0],MPU6050_RA_PWR_MGMT_1 );
+	  
+	MPU6050_I2C_BufferRead(10,FIFO_MPU,MPU6050_RA_FIFO_R_W,temp);
 	
-	 for ( i=0;i<170;i++)
- 	{	
-		 FIFO_MPU[i] =(((short)buffer[i]) << 8) | buffer[i+1];
-		 FIFO_MPU[i+1] =(((short)buffer[i+2]) << 8) | buffer[i+3];
-		 FIFO_MPU[i+2] =(((short)buffer[i+4]) << 8) | buffer[i+5];
+// 	while (temp!=0)
+// 	{
+// 		 FIFO_MPU[i++] =(((short)buffer[0]) << 8) | buffer[1];
+// 		 FIFO_MPU[i++] =(((short)buffer[2]) << 8) | buffer[3];
+// 		 FIFO_MPU[i++] =(((short)buffer[4]) << 8) | buffer[5];
+// 		 temp-=6;
+// 	}
+		 
+		
 // 		 
 //  		FIFO_MPU[i++] = (((short)buffer[0]) << 8) | buffer[1];
 //  		FIFO_MPU[i++] = (((short)buffer[2]) << 8) | buffer[3];
@@ -478,7 +520,7 @@ short MPU9150_getMotion6_fifo(short* FIFO_MPU,short *offset)
 //  		FIFO_MPU[i++]= ((((short)buffer[8]) << 8) | buffer[9])-offset[0];
 //  		FIFO_MPU[i++] = ((((short)buffer[10]) << 8) | buffer[11])-offset[1];
 //  		FIFO_MPU[i++] = ((((short)buffer[12]) << 8) | buffer[13])-offset[2
- 	}
+ 	
 	//	FIFO_MPU[i]=0; /* ukonèení*/
 	return temp;
 }
@@ -546,11 +588,10 @@ void MPU9150_Gyro_Tempr_Bias(short *offset)
 // 	/* Read actual temprreature */
 // 	MPU6050_I2C_BufferRead(MPU6050_DEFAULT_ADDRESS,buffer, MPU6050_RA_TEMP_OUT_H , 2);    
 // 	Temp=(((short)buffer[0]) << 8) | buffer[1];
-//     
-// 	if (Pre_Temp==0)	Pre_Temp=Temp;
-//     {
-// 		
-//     }
-
+     
 }
+
+
+// setSleepEnabled(false); // thanks to Jack Elston for pointing this one out!
+
 

@@ -163,7 +163,9 @@ src/Senzors/MPU9150/MPU_9150.d src/Senzors/MPU9150/MPU_9150.o: \
  ../src/ASF/sam/drivers/usart/usart.h ../src/config/conf_uart_serial.h \
  ../src/ASF/sam/drivers/wdt/wdt.h \
  ../src/ASF/sam/drivers/pio/pio_handler.h \
- ../src/Senzors/MPU9150/MPU_9150.h ../src/Senzors/MPU9150/MPU_9150_HAL.h
+ ../src/Senzors/MPU9150/MPU_9150.h ../src/Senzors/MPU9150/MPU_9150_HAL.h \
+ ../src/Senzors/STM_STEVAL/GYRO/L3gx.h \
+ ../src/Senzors/STM_STEVAL/GYRO/Gyroscope.h
 
 ../src/asf.h:
 
@@ -504,3 +506,7 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 ../src/Senzors/MPU9150/MPU_9150.h:
 
 ../src/Senzors/MPU9150/MPU_9150_HAL.h:
+
+../src/Senzors/STM_STEVAL/GYRO/L3gx.h:
+
+../src/Senzors/STM_STEVAL/GYRO/Gyroscope.h:
