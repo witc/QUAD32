@@ -144,7 +144,7 @@ int main (void)
 // 		
 
 	/* Create timer */
-	MPU_Timer=xTimerCreate("Timer_MPU",150,pdTRUE,0,MPU_TimerCallback);
+	MPU_Timer=xTimerCreate("Timer_MPU",100,pdTRUE,0,MPU_TimerCallback);
 	
 	Queue_RF_Task=xQueueCreate(3,sizeof(RF_Queue));
 	Queue_Senzor_Task=xQueueCreate(2,sizeof(MPU9150_Queue));

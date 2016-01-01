@@ -37,7 +37,7 @@ void MPU_TimerCallback(xTimerHandle pxTimer)
 	//if(xTimerStopFromISR(MPU_Timer,pdPASS)!=pdPASS){};
 		
 	ioport_set_pin_level(PERIODE_PIN,true);
-	GL_XYZ.temp=MPU9150_getMotion6_fifo(&GL_XYZ.MPU_FIFO[0],offset);
+	GL_XYZ.temp=MPU9150_getMotion6_fifo(&GL_XYZ.MPU_FIFO[0]);
 	//ioport_toggle_pin_level(PERIODE_PIN);
 	
 	ioport_set_pin_level(PERIODE_PIN,false);
@@ -115,14 +115,13 @@ void Senzor_Task(void *pvParameters)
 	
 	taskENTER_CRITICAL();
 	twi_init();
-	//taskEXIT_CRITICAL();
-	
 	MPU6050_Initialize();
+	taskEXIT_CRITICAL();
 	
 //	vTaskDelay(20/portTICK_RATE_MS);
 //  	data[0] =0x0;	
 //  	MPU6050_I2C_ByteWrite(10, data[0],MPU6050_RA_FIFO_EN);      // Disable FIFO		
-//  	MPU9150_Gyro_Tempr_Bias(offset);
+  	MPU9150_Gyro_Tempr_Bias(offset);
 // 	/* Fifo enable + FIFO reset */
  // 	data[0] =0x44;
  //	MPU6050_I2C_ByteWrite(10,data,MPU6050_RA_USER_CTRL );
@@ -134,12 +133,6 @@ void Senzor_Task(void *pvParameters)
 	if (Kalibrace==NULL)
 	{
 		
-// 		MAG.Nasobek1=0.919999999;
-// 		MAG.Nasobek2=1.0973854;
-// 		MAG.X_Offset=208;
-// 		MAG.Y_Offset=-158;
-// 		MAG.Z_Offset=-2;
-			
 		Kalibrace=1;
 		
 	}
@@ -155,32 +148,37 @@ void Senzor_Task(void *pvParameters)
  		if(xQueueReceive(Queue_Senzor_Task,&XYZ,portMAX_DELAY)==pdPASS)
   		{	
 			  packet_count = XYZ.temp/6;
+			  temp[0]=0;
+			  temp[1]=0;
+			  temp[2]=0;
  			 for (short i=0;i< packet_count;i++)
  			 {
  				temp[0]=((((short)XYZ.MPU_FIFO[i++])<< 8 ) | XYZ.MPU_FIFO[i++]);//-offset[0];
  				temp[1]=((((short)XYZ.MPU_FIFO[i++]) << 8) | XYZ.MPU_FIFO[i++]);//-offset[1];
  				temp[2]=((((short)XYZ.MPU_FIFO[i++]) << 8) | XYZ.MPU_FIFO[i]);//-offset[2];
 // 				
-    				temp[0]-=-45;
-    				temp[1]-=-8;
-    				temp[2]-=17;
+     				temp[0]-=offset[0];
+     				temp[1]-=offset[1];
+     				temp[2]-=offset[2];
+// // // 				
+//  				f_temp[0]=(float)((temp[0]*0.32f)*0.001f);
+//  				f_temp[1]=(float)((temp[1]*0.32f)*0.001f);
+//  				f_temp[2]=(float)((temp[2]*0.32f)*0.001f);
 // // 				
- 				f_temp[0]=(float)((temp[0]*0.32f)*0.001f);
- 				f_temp[1]=(float)((temp[1]*0.32f)*0.001f);
- 				f_temp[2]=(float)((temp[2]*0.32f)*0.001f);
-// 				
-   				uhel[0]+=(float)f_temp[0];
-   				uhel[1]+=(float)f_temp[1];
-   				uhel[2]+=(float)f_temp[2];
+//    				uhel[0]+=(float)f_temp[0];
+//    				uhel[1]+=(float)f_temp[1];
+//    				uhel[2]+=(float)f_temp[2];
 				
 								
 			 }
-			  
+// 			  temp[0]/= packet_count;
+// 			  temp[1]/= packet_count;
+// 			  temp[2]/= packet_count;
 		//	if(xTimerStart(MPU_Timer,0)!=pdPASS){}
 // 	
-     			temp[0]=0;//(short)(uhel[0]);
-    			temp[2]=(short)(uhel[1]);
-    //			temp[2]=(short)(uhel[2]);
+//      			temp[0]=0;//(short)(uhel[0]);
+//         		temp[1]=(short)(uhel[1]);
+//         		temp[2]=(short)(uhel[2]);
 // 				
 			Semtech.Buffer[0]=(uint8_t)temp[0];	//LOW
 			Semtech.Buffer[1]=(uint8_t)(temp[0]>>8);		//HIGH

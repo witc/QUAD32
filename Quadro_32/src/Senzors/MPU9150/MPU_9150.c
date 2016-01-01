@@ -115,7 +115,7 @@ void MPU6050_Initialize()
 	 MPU6050_I2C_ByteWrite(10,&data[0], MPU6050_RA_CONFIG);
 	
 	 /* set sample rate */
-	 data[0]=9;
+	 data[0]=0;
 	 MPU6050_I2C_ByteWrite(10,data,MPU6050_RA_SMPLRT_DIV); // 1khz / (1 + 3) =250hz
 	 
 	 /* Set citlivost */
@@ -475,7 +475,7 @@ void MPU9150_getMotion6(short* ax, short* ay, short* az, short* gx, short* gy, s
 }
 
 /* FIFO DATA */
-short MPU9150_getMotion6_fifo(uint8_t* FIFO_MPU,short *offset)
+short MPU9150_getMotion6_fifo(uint8_t* FIFO_MPU)
 {	
 	
 	short temp;
@@ -483,8 +483,8 @@ short MPU9150_getMotion6_fifo(uint8_t* FIFO_MPU,short *offset)
 	short i=0;
 	
 	/* disable fifo */
-   	//FIFO_MPU[0]=0;
-   	//MPU6050_I2C_ByteWrite(10,FIFO_MPU,MPU6050_RA_FIFO_EN);
+   	FIFO_MPU[0]=0;
+   	MPU6050_I2C_ByteWrite(10,FIFO_MPU,MPU6050_RA_FIFO_EN);
 	//MPU6050_I2C_BufferRead(10,FIFO_MPU,MPU6050_RA_INT_STATUS,1);
 	
 	/* read count of Fifo */
@@ -499,8 +499,8 @@ short MPU9150_getMotion6_fifo(uint8_t* FIFO_MPU,short *offset)
 	MPU6050_I2C_BufferRead(10,&FIFO_MPU[0],MPU6050_RA_FIFO_R_W,temp);
 	
 	/* enable fifo */
- 	//FIFO_MPU[0]=0x70;
- 	//MPU6050_I2C_ByteWrite(10,FIFO_MPU,MPU6050_RA_FIFO_EN);
+ 	FIFO_MPU[0]=0x70;
+ 	MPU6050_I2C_ByteWrite(10,FIFO_MPU,MPU6050_RA_FIFO_EN);
 	
 // 	while (temp!=0)
 // 	{
@@ -529,34 +529,59 @@ short MPU9150_getMotion6_fifo(uint8_t* FIFO_MPU,short *offset)
 /************************************************************************/
 void MPU9150_Gyro_Tempr_Bias(short *offset)
 {
-	float Sum[4];	//32 bits
+	long long Sum[4];	//32 bits
 	static short Temp;
 	static short Temperature;
 	static short Pre_Temp=0;
-	uint8_t buffer[8];
-	#define NO_OF_SAMPLES 2000
+	uint8_t buffer[1024];
+	#define NO_OF_SAMPLES 20
+	short count=0;
+	short count_sum=0;
 	
 	for (short i=0;i<NO_OF_SAMPLES;i++)
-	{
-		MPU6050_I2C_BufferRead(MPU6050_DEFAULT_ADDRESS,buffer, MPU6050_RA_GYRO_XOUT_H  , 6);  
-// 		  
-// 		Temp=(short)((buffer[0] << 8) | buffer[1]);
-// 		Sum[3]+=(float)Temp;
-		Temp=(short)((buffer[0] << 8) | buffer[1]);
-		Sum[0]+=(float)Temp;
-		Temp=(short)((buffer[2] << 8) | buffer[3]);
-		Sum[1]+=(float)Temp;
-		Temp=(short)((buffer[4] << 8) | buffer[5]);
-		Sum[2]+=(float)Temp;
-		//delay_ms(2);
+	{	
+		ioport_set_pin_level(PERIODE_PIN,true);
+	
+		count=MPU9150_getMotion6_fifo(buffer);
+		count/=6;
+		for (short j = 0; j < count; j++)
+		{
+			Temp=(short)((buffer[j++] << 8) | buffer[j++]);
+			Sum[0]+=Temp;
+			Temp=(short)((buffer[j++] << 8) | buffer[j++]);
+			Sum[1]+=Temp;
+			Temp=(short)((buffer[j++] << 8) | buffer[j]);
+			Sum[2]+=Temp;
+			count_sum+=1;
+		}
+		
+		ioport_set_pin_level(PERIODE_PIN,false);	
+		delay_ms(20);
 	}
 	
-	/* Temp */
+	offset[0]=(short)(Sum[0]/count_sum);
+	offset[1]=(short)(Sum[1]/count_sum);
+	offset[2]=(short)(Sum[2]/count_sum);
+		 		
+	
+// 	for (short i=0;i<NO_OF_SAMPLES;i++)
+// 	{
+// 		MPU6050_I2C_BufferRead(MPU6050_DEFAULT_ADDRESS,buffer, MPU6050_RA_GYRO_XOUT_H  , 6);  
+// // 		  
+// // 		Temp=(short)((buffer[0] << 8) | buffer[1]);
+// // 		Sum[3]+=(float)Temp;
+// 		Temp=(short)((buffer[0] << 8) | buffer[1]);
+// 		Sum[0]+=(float)Temp;
+// 		Temp=(short)((buffer[2] << 8) | buffer[3]);
+// 		Sum[1]+=(float)Temp;
+// 		Temp=(short)((buffer[4] << 8) | buffer[5]);
+// 		Sum[2]+=(float)Temp;
+// 		//delay_ms(2);
+// 	}
+//	/* Temp */
 //	Temperature=(short)(((Sum[3]/NO_OF_SAMPLES)/340)+36.53);
 	/*X,Y,Z gyro offset */
-	offset[0]=(short)(Sum[0]/NO_OF_SAMPLES);
-	offset[1]=(short)(Sum[1]/NO_OF_SAMPLES);
-	offset[2]=(short)(Sum[2]/NO_OF_SAMPLES);
+	
 	
 	
 	/* waiting for incriasing tempreature */
@@ -578,7 +603,7 @@ void MPU9150_Gyro_Tempr_Bias(short *offset)
 // 	}
 // 	
 	/* Temp */
-	Temperature=(short)((Sum[3]/NO_OF_SAMPLES)/340+36.53);
+//	Temperature=(short)((Sum[3]/NO_OF_SAMPLES)/340+36.53);
 // 	/*X,Y,Z gyro offset */
 // 	offset[0]=(short)(Sum[0]/NO_OF_SAMPLES);
 // 	offset[1]=(short)(Sum[1]/NO_OF_SAMPLES);
