@@ -29,23 +29,23 @@ extern volatile xTimerHandle MPU_Timer;
 volatile short offset[4]={0,0,0,0};
 	
 extern fourthOrderData_t fourthOrder1000Hz[6];	//MAg and accel 3 axis
- 	MPU9150_Queue GL_XYZ;
+MPU9150_Queue GL_XYZ;
 
 
 void MPU_TimerCallback(xTimerHandle pxTimer)
 {	
 	//if(xTimerStopFromISR(MPU_Timer,pdPASS)!=pdPASS){};
 		
-	//ioport_set_pin_level(PERIODE_PIN,true);
+	ioport_set_pin_level(PERIODE_PIN,true);
 	GL_XYZ.temp=MPU9150_getMotion6_fifo(&GL_XYZ.MPU_FIFO[0],offset);
-	ioport_toggle_pin_level(PERIODE_PIN);
+	//ioport_toggle_pin_level(PERIODE_PIN);
 	
-	//ioport_set_pin_level(PERIODE_PIN,false);
+	ioport_set_pin_level(PERIODE_PIN,false);
 	
-// 	if(xQueueSendFromISR(Queue_Senzor_Task,&XYZ,1)!=pdPASS);
-// 	{
-// 		
-// 	}
+   	if(xQueueSendFromISR(Queue_Senzor_Task,&GL_XYZ,1)!=pdPASS);
+   	{
+   		
+   	}
 	
 	
 }
@@ -59,19 +59,19 @@ void MPU9150_INT()
 	NVIC_ClearPendingIRQ(PIOB_IRQn);
 	/*xTaskResumeFromISR(Senzor_id);*/
 
-	ioport_toggle_pin_level(PERIODE_PIN);
+//	ioport_toggle_pin_level(PERIODE_PIN);
 	
-	XYZ.temp=MPU9150_getMotion6_fifo(XYZ.MPU_FIFO,offset);
-	data[0]=0x4;
-	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_USER_CTRL );
+ 	//XYZ.temp=MPU9150_getMotion6(XYZ.MPU_FIFO,offset);
+// 	data[0]=0x4;
+// 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_USER_CTRL );
 	
 	//ioport_toggle_pin_level(PERIODE_PIN);
 		
- 	if(xQueueSendFromISR(Queue_Senzor_Task,&XYZ,1)!=pdPASS);
- 	{
- 			
- 	}
-	
+//   	if(xQueueSendFromISR(Queue_Senzor_Task,&XYZ,1)!=pdPASS);
+//   	{
+//  			
+//   	}
+
 // 		
 //  	if(xQueueSendFromISR(Queue_Senzor_Task,&XYZ,10)!=pdPASS);
 //  	{
@@ -98,27 +98,34 @@ void Senzor_Task(void *pvParameters)
 	RF_Queue Semtech;
 	//EulerAngles Angles;
 	portTickType LastWakeTime;
-	LastWakeTime=xTaskGetTickCount();
+
 	
 	char Kalibrace=NULL;
 	short temp[6];
 	static float uhel[3];
+	float f_temp[3];
+	short packet_count=0;
 		
  	short GyroXYZ[3];
  	short MagXYZ[3];
 	short AccXYZ[3];
 	
-	
+	uint8_t data[2];
 	uhel[0]=0;
 	
 	taskENTER_CRITICAL();
 	twi_init();
-	taskEXIT_CRITICAL();
+	//taskEXIT_CRITICAL();
 	
 	MPU6050_Initialize();
-
-
 	
+//	vTaskDelay(20/portTICK_RATE_MS);
+//  	data[0] =0x0;	
+//  	MPU6050_I2C_ByteWrite(10, data[0],MPU6050_RA_FIFO_EN);      // Disable FIFO		
+//  	MPU9150_Gyro_Tempr_Bias(offset);
+// 	/* Fifo enable + FIFO reset */
+ // 	data[0] =0x44;
+ //	MPU6050_I2C_ByteWrite(10,data,MPU6050_RA_USER_CTRL );
 	
 //	INT_init();
 // 	short GyroXYZ[80][3];
@@ -144,27 +151,37 @@ void Senzor_Task(void *pvParameters)
 		
 	for (;;)
 	{	
-		
+	//	MPU6050_get
  		if(xQueueReceive(Queue_Senzor_Task,&XYZ,portMAX_DELAY)==pdPASS)
   		{	
-// 			 for (short i=0;i<1;i++)
-// 			 {
-// 				GyroXYZ[0]=XYZ.MPU_FIFO[i] ;
-// 				GyroXYZ[1]=XYZ.MPU_FIFO[i+1] ;
-// 				GyroXYZ[2]=XYZ.MPU_FIFO[i+2];
+			  packet_count = XYZ.temp/6;
+ 			 for (short i=0;i< packet_count;i++)
+ 			 {
+ 				temp[0]=((((short)XYZ.MPU_FIFO[i++])<< 8 ) | XYZ.MPU_FIFO[i++]);//-offset[0];
+ 				temp[1]=((((short)XYZ.MPU_FIFO[i++]) << 8) | XYZ.MPU_FIFO[i++]);//-offset[1];
+ 				temp[2]=((((short)XYZ.MPU_FIFO[i++]) << 8) | XYZ.MPU_FIFO[i]);//-offset[2];
 // 				
-// 				//
-// 				//usart_serial_write_packet(BOARD_USART,&Semtech.Buffer[0],6);
-			
+    				temp[0]-=-45;
+    				temp[1]-=-8;
+    				temp[2]-=17;
+// // 				
+ 				f_temp[0]=(float)((temp[0]*0.32f)*0.001f);
+ 				f_temp[1]=(float)((temp[1]*0.32f)*0.001f);
+ 				f_temp[2]=(float)((temp[2]*0.32f)*0.001f);
+// 				
+   				uhel[0]+=(float)f_temp[0];
+   				uhel[1]+=(float)f_temp[1];
+   				uhel[2]+=(float)f_temp[2];
 				
+								
 			 }
 			  
 		//	if(xTimerStart(MPU_Timer,0)!=pdPASS){}
-			
-			temp[0]=(short)(GyroXYZ[0]);
-			temp[1]=(short)(GyroXYZ[1]);
-			temp[2]=(short)(GyroXYZ[2]);
-				
+// 	
+     			temp[0]=0;//(short)(uhel[0]);
+    			temp[2]=(short)(uhel[1]);
+    //			temp[2]=(short)(uhel[2]);
+// 				
 			Semtech.Buffer[0]=(uint8_t)temp[0];	//LOW
 			Semtech.Buffer[1]=(uint8_t)(temp[0]>>8);		//HIGH
 			Semtech.Buffer[2]=(uint8_t) temp[1];;
@@ -174,14 +191,20 @@ void Senzor_Task(void *pvParameters)
 			
 			Semtech.Stat.Data_State=RFLR_STATE_TX_INIT;
 			Semtech.Stat.Cmd=STAY_IN_STATE;	
-		
+			
+			if (packet_count!=0)
+			{
+				if(xQueueSend(Queue_RF_Task,&Semtech,1))	//pdPASS=1-
+				{
+					
+				}
+			}
+			
+
+		}
 	}
 }
 
-// 			if(xQueueSend(Queue_RF_Task,&Semtech,1))	//pdPASS=1-
-// 			{
-// 					
-// 			}
 	//	 }
 // 				
 // 		ioport_toggle_pin_level(PERIODE_PIN);

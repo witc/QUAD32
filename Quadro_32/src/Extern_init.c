@@ -14,7 +14,7 @@
 
 
 
-#define TWI_SPEED				100000//100KHZ default
+#define TWI_SPEED				400000//100KHZ default
 
 
 /********/
@@ -30,9 +30,9 @@ void twi_init(void)
 	 
 	twi_master_setup(TWI0, &opt);
 	vTaskDelay(10/portTICK_RATE_MS);
- //	twi_master_init(&TWI0, &opt);
+ 	twi_master_init(TWI0, &opt);
  	twi_master_enable(TWI0);
-	 vTaskDelay(200/portTICK_RATE_MS);
+ //	 vTaskDelay(200/portTICK_RATE_MS);
 }
 
 

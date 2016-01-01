@@ -73,79 +73,69 @@ void MPU6050_Initialize()
 	
 	unsigned char data[6];
 	
+	delay_ms(100);
+	 /* Wake up chip. */
+	 data[0] = 0x00;
+	 MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
+	delay_ms(1000);
+	
     /* Reset device. */
     data[0] = BIT_RESET;
 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
+	delay_ms(1000);
 	
-	vTaskDelay(30/portTICK_RATE_MS);
 	
 	while(!MPU6050_TestConnection())
 	{
 		/*MPU6050_GetDeviceID();*/
 	}
 	
-	
 	 /* Wake up chip. */
 	 data[0] = 0x00;
 	 MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
-	 
-	/*set clock */
-	 MPU6050_SetClockSource(MPU6050_CLOCK_PLL_ZGYRO );	// 
-	 
-	/*set LPF and Fs to 8khz - internal */
-	data[0]=4;	/* 4=21Hz cut off*/
-	MPU6050_I2C_ByteWrite(10,&data[0], MPU6050_RA_CONFIG);
-	  
-	 /* set sample rate */
-	data[0]=1;
-	MPU6050_I2C_ByteWrite(10,data,MPU6050_RA_SMPLRT_DIV); // 1khz / (1 + 3) =
-			
-	/* Set citlivost */
-    MPU6050_SetFullScaleGyroRange(MPU6050_GYRO_FS_2000);
-    MPU6050_SetFullScaleAccelRange(MPU6050_ACCEL_FS_4);
+	 /*set clock */
+	 MPU6050_SetClockSource(MPU6050_CLOCK_PLL_XGYRO );	// 
 	
 // 	 /* Wake up chip. */
  	 data[0] = 0x00;
  	 MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
-// 	 	   	
-	/* Fifo enable + FIFO reset */
- 	data[0] =0x44;
- 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_USER_CTRL );
 	
+// Configure device for bias calculation
+	data[0] = 0x00;
+	MPU6050_I2C_ByteWrite(10,data, MPU6050_RA_INT_ENABLE);   // Disable all interrupts
+	MPU6050_I2C_ByteWrite(10,data, MPU6050_RA_FIFO_EN);      // Disable FIFO
+	MPU6050_I2C_ByteWrite(10,data, MPU6050_RA_PWR_MGMT_1);   // Turn on internal clock source
+	MPU6050_I2C_ByteWrite(10,data, MPU6050_RA_I2C_MST_CTRL); // Disable I2C master
+	MPU6050_I2C_ByteWrite(10,data, MPU6050_RA_USER_CTRL);    // Disable FIFO and I2C master modes
+	data[0] = 0x0C;
+	MPU6050_I2C_ByteWrite(10,data, MPU6050_RA_USER_CTRL);    // Reset FIFO and DMP
+			
+	 /*set LPF and Fs to 8khz - internal */
+	 data[0]=4;	/* 4=21Hz cut off*/
+	 MPU6050_I2C_ByteWrite(10,&data[0], MPU6050_RA_CONFIG);
+	
+	 /* set sample rate */
+	 data[0]=9;
+	 MPU6050_I2C_ByteWrite(10,data,MPU6050_RA_SMPLRT_DIV); // 1khz / (1 + 3) =250hz
+	 
+	 /* Set citlivost */
+	 MPU6050_SetFullScaleGyroRange(MPU6050_GYRO_FS_2000);
+	
+	 MPU6050_SetFullScaleAccelRange(MPU6050_ACCEL_FS_4);
+	
+	 
+	/* Fifo enable + FIFO reset */
+  	data[0] =0x44;
+  	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_USER_CTRL );
+
 	/* Enable Fifo, GYRO, Temp and Acc*/
- 	data[0]=0xF8;
- 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_FIFO_EN);
+ 	data[0]=0x70;
+	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_FIFO_EN);
 
 	/* Data ready interrupts enabled*/
-//  	data[0]=0x10;
-//  	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_INT_ENABLE);
+  	data[0]=0x10;
+  	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_INT_ENABLE);
 	
-	
-	/* Fifo reset */
-	data[0]=0x4;	
- 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_USER_CTRL );
- 	
-	
-// 	while (temp!=0)
-// 	{
-// 		FIFO_MPU[i++] =(((short)buffer[0]) << 8) | buffer[1];
-// 		FIFO_MPU[i++] =(((short)buffer[2]) << 8) | buffer[3];
-// 		FIFO_MPU[i++] =(((short)buffer[4]) << 8) | buffer[5];
-// 		temp-=6;
-// 	}
-	
-// 	/* Fifo enable + FIFO reset */
-// 	data[0] =0x44;
-// 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_USER_CTRL );
-// 	
-// 	/* Enable Fifo, GYRO */
-// 	data[0]=0xF8;
-// 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_FIFO_EN);
-// 
-// 	/* Data ready interrupts enabled*/
-// 	data[0]=0x1;
-// 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_INT_ENABLE);
-// setSleepEnabled(false); // thanks to Jack Elston for pointing this one out!
 
 }
 
@@ -485,24 +475,32 @@ void MPU9150_getMotion6(short* ax, short* ay, short* az, short* gx, short* gy, s
 }
 
 /* FIFO DATA */
-short MPU9150_getMotion6_fifo(short* FIFO_MPU,short *offset)
+short MPU9150_getMotion6_fifo(uint8_t* FIFO_MPU,short *offset)
 {	
 	
 	short temp;
 //	static uint8_t buffer[1024];
 	short i=0;
 	
-// 	buffer[0]=0;
-// 	MPU6050_I2C_ByteWrite(10,buffer,MPU6050_RA_FIFO_EN);
+	/* disable fifo */
+   	//FIFO_MPU[0]=0;
+   	//MPU6050_I2C_ByteWrite(10,FIFO_MPU,MPU6050_RA_FIFO_EN);
+	//MPU6050_I2C_BufferRead(10,FIFO_MPU,MPU6050_RA_INT_STATUS,1);
+	
 	/* read count of Fifo */
 	MPU6050_I2C_BufferRead(10,FIFO_MPU,MPU6050_RA_FIFO_COUNTH,2);
 	temp=(((short)FIFO_MPU[0]) << 8) | FIFO_MPU[1];
  	
-	  /* Wake up chip. */
-	  FIFO_MPU[0] = 0x00;
-	  MPU6050_I2C_ByteWrite(10,&FIFO_MPU[0],MPU6050_RA_PWR_MGMT_1 );
-	  
-	MPU6050_I2C_BufferRead(10,FIFO_MPU,MPU6050_RA_FIFO_R_W,temp);
+	/* Wake up chip. */
+// 	FIFO_MPU[0] = 0x00;
+// 	MPU6050_I2C_ByteWrite(10,&FIFO_MPU[0],MPU6050_RA_PWR_MGMT_1 );
+	 
+	 /* read FIFO */
+	MPU6050_I2C_BufferRead(10,&FIFO_MPU[0],MPU6050_RA_FIFO_R_W,temp);
+	
+	/* enable fifo */
+ 	//FIFO_MPU[0]=0x70;
+ 	//MPU6050_I2C_ByteWrite(10,FIFO_MPU,MPU6050_RA_FIFO_EN);
 	
 // 	while (temp!=0)
 // 	{
@@ -536,7 +534,7 @@ void MPU9150_Gyro_Tempr_Bias(short *offset)
 	static short Temperature;
 	static short Pre_Temp=0;
 	uint8_t buffer[8];
-	#define NO_OF_SAMPLES 1000
+	#define NO_OF_SAMPLES 2000
 	
 	for (short i=0;i<NO_OF_SAMPLES;i++)
 	{
@@ -550,7 +548,7 @@ void MPU9150_Gyro_Tempr_Bias(short *offset)
 		Sum[1]+=(float)Temp;
 		Temp=(short)((buffer[4] << 8) | buffer[5]);
 		Sum[2]+=(float)Temp;
-		delay_ms(2);
+		//delay_ms(2);
 	}
 	
 	/* Temp */

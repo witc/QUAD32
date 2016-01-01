@@ -65,8 +65,6 @@ void board_init(void)
 	 */
 	ioport_init();
 
-	
-
 	//Compass
 	gpio_configure_pin(I2C_SCL_PIN, TWI0_CLK_FLAGS);
 	gpio_configure_pin(I2C_SDA_PIN, TWI0_DATA_FLAGS);
@@ -75,6 +73,9 @@ void board_init(void)
 	ioport_set_pin_dir(PERIODE_PIN_INT,1);
 	
 	ioport_set_pin_dir(USART_TXD_PIN, IOPORT_DIR_OUTPUT);
+	
+	ioport_set_pin_dir(I2C_SCL_PIN, IOPORT_DIR_OUTPUT);
+	ioport_set_pin_dir(I2C_SDA_PIN, IOPORT_DIR_OUTPUT);
 	
 }
 

@@ -14,7 +14,7 @@
 
 void MPU_9150_send(unsigned char Adress, unsigned char *Data, unsigned char Length)
 {
-	taskENTER_CRITICAL();
+	//taskENTER_CRITICAL();
 
 	twi_package_t packet_write = {
 		.chip         =  MPU6050_DEFAULT_ADDRESS,                        // TWI slave bus address
@@ -27,14 +27,14 @@ void MPU_9150_send(unsigned char Adress, unsigned char *Data, unsigned char Leng
 	
 	while(twi_master_write(TWI0, &packet_write) != TWI_SUCCESS);
 	//twi_master_write(&TWIC, &packet_write);
-	taskEXIT_CRITICAL();
+	//taskEXIT_CRITICAL();
 
 }
 /**************************************/
 
 void MPU_9150_read(unsigned char Adress, unsigned char *Data, short Length)
 {	
-	taskENTER_CRITICAL();
+//	taskENTER_CRITICAL();
 
 	twi_package_t packet_read = {
 		.chip         =  MPU6050_DEFAULT_ADDRESS,                        // TWI slave bus address
@@ -49,7 +49,7 @@ void MPU_9150_read(unsigned char Adress, unsigned char *Data, short Length)
 	twi_master_read(TWI0, &packet_read);
 	//twi
 
-	taskEXIT_CRITICAL();
+//	taskEXIT_CRITICAL();
 }
 
 void MPU_9150_init()
