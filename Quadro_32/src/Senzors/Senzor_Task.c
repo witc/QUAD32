@@ -36,7 +36,7 @@ void MPU_TimerCallback(xTimerHandle pxTimer)
 	if(xTimerStopFromISR(MPU_Timer,pdPASS)!=pdPASS){};
 		
 	ioport_toggle_pin_level(PERIODE_PIN);
-	XYZ.temp=MPU9150_getMotion6_fifo(XYZ.MPU_FIFO,offset);
+//	XYZ.temp=MPU9150_getMotion6_fifo(XYZ.MPU_FIFO,offset);
 	//ioport_toggle_pin_level(PERIODE_PIN);
 	
 	if(xQueueSendFromISR(Queue_Senzor_Task,&XYZ,1)!=pdPASS);
@@ -85,6 +85,25 @@ void INT_init()
 // 	NVIC_SetPriority(PIOB_IRQn,2);
 }
 
+void  Senzor_init()
+{
+	LSMMagInit LSMMagInitStructure;
+
+	/* Fill the magnetometer structure */
+	LSMMagInitStructure.xOutputDataRate = LSM_ODR_30_HZ;
+	LSMMagInitStructure.xFullScale = LSM_FS_1_9_GA;
+	LSMMagInitStructure.xWorkingMode = LSM_CONTINUOS_CONVERSION;
+	LSMMagInitStructure.xTemperatureSensor = LSM_ENABLE ;
+
+	/* Configure the magnetometer main parameters */
+	//Lsm303dlhcMagConfig(&LSMMagInitStructure);
+	
+	/* Init Acc*/
+	//	initAccel();
+	
+	/*Init Gyro */
+	initGyro();
+}
 void Senzor_Task(void *pvParameters)
 {	
 	MPU9150_Queue XYZ;
@@ -108,32 +127,18 @@ void Senzor_Task(void *pvParameters)
 	twi_init();
 	taskEXIT_CRITICAL();
 	
-	delay_ms(500);
-	MPU6050_Initialize();
-	delay_ms(1000);
-	MPU9150_Gyro_Tempr_Bias(offset);
-	
+	/* senzor init */
+	Senzor_init();
+		
 	//INT_init();
-// 	short GyroXYZ[80][3];
-// 	short AccXYZ[80][3];
+
 	
 	if (Kalibrace==NULL)
 	{
-		
-// 		MAG.Nasobek1=0.919999999;
-// 		MAG.Nasobek2=1.0973854;
-// 		MAG.X_Offset=208;
-// 		MAG.Y_Offset=-158;
-// 		MAG.Z_Offset=-2;
-			
-		Kalibrace=1;
-		
+		Kalibrace=1;		
 	}
 	
-	short FIFO_MPU[1024];
-	short poc=0;
-	
-	if(xTimerStart(MPU_Timer,0)!=pdPASS){}
+//	if(xTimerStart(MPU_Timer,0)!=pdPASS){}
 		
 	for (;;)
 	{	
@@ -152,7 +157,7 @@ void Senzor_Task(void *pvParameters)
 				
 			 }
 			  
-			if(xTimerStart(MPU_Timer,0)!=pdPASS){}
+			//if(xTimerStart(MPU_Timer,0)!=pdPASS){}
 			
 			temp[0]=(short)(GyroXYZ[0]);
 			temp[1]=(short)(GyroXYZ[1]);

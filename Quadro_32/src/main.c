@@ -144,7 +144,7 @@ int main (void)
 // 		
 
 	/* Create timer */
-	MPU_Timer=xTimerCreate("Timer_MPU",100,pdTRUE,0,MPU_TimerCallback);
+	//MPU_Timer=xTimerCreate("Timer_MPU",100,pdTRUE,0,MPU_TimerCallback);
 	
 	Queue_RF_Task=xQueueCreate(3,sizeof(RF_Queue));
 	Queue_Senzor_Task=xQueueCreate(2,sizeof(MPU9150_Queue));
@@ -152,7 +152,7 @@ int main (void)
 	/*Create Semtech Task*/
 	xTaskCreate(RF_Task,"sx1276",configMINIMAL_STACK_SIZE+500,NULL, 1,&Sx1276_id);
 	/*Create Compass Task*/
-	xTaskCreate(Senzor_Task,"Senzor",configMINIMAL_STACK_SIZE+600,NULL, 2,&Senzor_id);
+	xTaskCreate(Senzor_Task,"Senzor",configMINIMAL_STACK_SIZE+500,NULL, 2,&Senzor_id);
 	
 	
 	vTaskStartScheduler();

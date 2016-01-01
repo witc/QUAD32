@@ -157,19 +157,42 @@ void computeGyroRTBias(void)
 ///////////////////////////////////////////////////////////////////////////////
 
 void initGyro(void)
-{
+{	
+	uint8_t data[2];
 	L3GInit L3GInitStructure;
+	L3GFifoInit L3GFifo_init;
+	L3GFilterInit L3GFilter_init;
 	
 	/* Fill the gyro structure */
 	L3GInitStructure.xPowerMode = L3G_NORMAL_SLEEP_MODE;
-	L3GInitStructure.xOutputDataRate =   L3G_ODR_760_HZ_CUTOFF_100;
+	L3GInitStructure.xOutputDataRate =   L3G_ODR_760_HZ_CUTOFF_35;
 	L3GInitStructure.xEnabledAxes = L3G_ALL_AXES_EN;
-	L3GInitStructure.xFullScale = L3G_FS_500_DPS;
+	L3GInitStructure.xFullScale = L3G_FS_2000_DPS;
 	L3GInitStructure.xDataUpdate = L3G_BLOCK_UPDATE;
 	L3GInitStructure.xEndianness = L3G_BIG_ENDIAN;
-
-	/* Configure the gyro main parameters */
 	L3gd20Config(&L3GInitStructure);
+	
+	/* setting fifo mode */
+// 	data[0]=(1<<6)|(1<<4); //Enable Fifo + HP enable
+// 	Gyro_send(0x24,data,1);
+// 	
+// 	L3GFifo_init.xFifoMode= L3G_STREAM_MODE;
+// 	L3GFifo_init.cWtm=20;
+// 	L3gd20FifoInit(&L3GFifo_init);
+	
+	/* Filter HP init */
+	L3GFilter_init.xHPF= L3G_ENABLE;
+	L3GFilter_init.cHPFCutOff=5	;//cut-off frequency will be ODR[Hz]/(12.5(1+cHPFCutOff))	
+	L3GFilter_init.xHPF_Mode=L3G_HPFM_NORMAL;
+	L3GFilter_init.cHPFReference=0;
+	L3gd20FilterConfig(&L3GFilter_init);
+	
+	
+	 /* Read the register content */
+	 Gyro_read( L3G_CTRL_REG3,&data[0],1);
+	 data[0]|=0x8;
+	 Gyro_send(L3G_CTRL_REG3,&data[0],1 );
+
 	
 	delay_ms(10);
 
