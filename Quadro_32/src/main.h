@@ -10,10 +10,12 @@
 #define MAIN_H_
 
 #define BOARD_ID_USART             ID_USART1
-
 #define BOARD_USART                USART0
-
 #define BOARD_USART_BAUDRATE       19200
+
+#define FIFO_MPU9150		0
+#define RAW_MPU9150			0
+#define RAW_INT_MPU9150		1
 
 
 //LoRa
@@ -120,8 +122,18 @@ typedef struct{
 
 /* MPU9150*/
 typedef struct{
-	
+
+
+#if (RAW_MPU9150==1)
+
+#elif ((RAW_INT_MPU9150==1))
+	uint8_t MPU_FIFO[14];
+#elif (FIFO_MPU9150==1)
 	uint8_t MPU_FIFO[1024];
+#else
+# error "Please specifyWay to get a datta from MPU9150"
+#endif	
+	
 	short temp;
 
 }MPU9150_Queue;

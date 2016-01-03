@@ -144,10 +144,19 @@ int main (void)
 // 		
 
 	/* Create timer */
-	MPU_Timer=xTimerCreate("Timer_MPU",100,pdTRUE,0,MPU_TimerCallback);
 	
 	Queue_RF_Task=xQueueCreate(3,sizeof(RF_Queue));
+	
+#if (RAW_MPU9150==1)
+
+#elif ((RAW_INT_MPU9150==1))
+	Queue_Senzor_Task=xQueueCreate(10,sizeof(MPU9150_Queue));	
+#elif (FIFO_MPU9150==1)
 	Queue_Senzor_Task=xQueueCreate(2,sizeof(MPU9150_Queue));
+	
+#else
+# error "Please specifyWay to get a datta from MPU9150"
+#endif
 	
 	/*Create Compass Task*/
 	xTaskCreate(Senzor_Task,"Senzor",configMINIMAL_STACK_SIZE+400,NULL, 1,&Senzor_id);	

@@ -39,10 +39,9 @@ void MPU_TimerCallback(xTimerHandle pxTimer)
 	ioport_set_pin_level(PERIODE_PIN,true);
 	GL_XYZ.temp=MPU9150_getMotion6_fifo(&GL_XYZ.MPU_FIFO[0]);
 	//ioport_toggle_pin_level(PERIODE_PIN);
-	
 	ioport_set_pin_level(PERIODE_PIN,false);
 	
-   	if(xQueueSendFromISR(Queue_Senzor_Task,&GL_XYZ,1)!=pdPASS);
+   	if(xQueueSendFromISR(Queue_Senzor_Task,&GL_XYZ,portMAX_DELAY)!=pdPASS);
    	{
    		
    	}
@@ -52,25 +51,24 @@ void MPU_TimerCallback(xTimerHandle pxTimer)
 
 void MPU9150_INT()
 {	
-	MPU9150_Queue XYZ;
+	
 	uint8_t data[2];
 	
 	//MPU9150_Queue d
 	NVIC_ClearPendingIRQ(PIOB_IRQn);
 	/*xTaskResumeFromISR(Senzor_id);*/
 
-//	ioport_toggle_pin_level(PERIODE_PIN);
-	
- 	//XYZ.temp=MPU9150_getMotion6(XYZ.MPU_FIFO,offset);
-// 	data[0]=0x4;
-// 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_USER_CTRL );
+	//ioport_set_pin_level(PERIODE_PIN,true);
+ 	MPU9150_getMotion3(GL_XYZ.MPU_FIFO,offset);
+	 
+	//ioport_set_pin_level(PERIODE_PIN,false);
 	
 	//ioport_toggle_pin_level(PERIODE_PIN);
 		
-//   	if(xQueueSendFromISR(Queue_Senzor_Task,&XYZ,1)!=pdPASS);
-//   	{
-//  			
-//   	}
+   	if(xQueueSendFromISR(Queue_Senzor_Task,&GL_XYZ,100)!=pdPASS);
+   	{
+  			
+   	}
 
 // 		
 //  	if(xQueueSendFromISR(Queue_Senzor_Task,&XYZ,10)!=pdPASS);
@@ -97,19 +95,21 @@ void Senzor_Task(void *pvParameters)
 	MPU9150_Queue XYZ;
 	RF_Queue Semtech;
 	//EulerAngles Angles;
-	portTickType LastWakeTime;
-
+	portTickType CurrentTime;
+	portTickType LastTime;
+	
 	
 	char Kalibrace=NULL;
 	short temp[6];
 	static float uhel[3];
 	float f_temp[3];
-	short packet_count=0;
+	uint16_t packet_count=0;
 		
  	short GyroXYZ[3];
  	short MagXYZ[3];
 	short AccXYZ[3];
 	
+	double dt=0;
 	uint8_t data[2];
 	uhel[0]=0;
 	
@@ -117,89 +117,127 @@ void Senzor_Task(void *pvParameters)
 	twi_init();
 	MPU6050_Initialize();
 	taskEXIT_CRITICAL();
+
+#if (RAW_MPU9150==1)
+	MPU9150_Gyro_Tempr_Bias_no_fifo(offset);
 	
-//	vTaskDelay(20/portTICK_RATE_MS);
-//  	data[0] =0x0;	
-//  	MPU6050_I2C_ByteWrite(10, data[0],MPU6050_RA_FIFO_EN);      // Disable FIFO		
-  	MPU9150_Gyro_Tempr_Bias(offset);
-// 	/* Fifo enable + FIFO reset */
- // 	data[0] =0x44;
- //	MPU6050_I2C_ByteWrite(10,data,MPU6050_RA_USER_CTRL );
-	
-//	INT_init();
-// 	short GyroXYZ[80][3];
-// 	short AccXYZ[80][3];
-	
-	if (Kalibrace==NULL)
-	{
+#elif ((RAW_INT_MPU9150==1))
+		MPU9150_Gyro_Tempr_Bias_no_fifo(offset);
+		INT_init();
+		  
+#elif (FIFO_MPU9150==1)
+		MPU9150_Gyro_Tempr_Bias(offset);
+		MPU_Timer=xTimerCreate("Timer_MPU",(30/portTICK_RATE_MS),pdTRUE,0,MPU_TimerCallback);
+		if(xTimerStart(MPU_Timer,0)!=pdPASS){}
+#else
+# error "Please specifyWay to get a datta from MPU9150"
+#endif
+
 		
-		Kalibrace=1;
-		
-	}
+	CurrentTime=xTaskGetTickCount();
+	LastTime=xTaskGetTickCount();
 	
-	short FIFO_MPU[1024];
-	short poc=0;
-	
-	if(xTimerStart(MPU_Timer,0)!=pdPASS){}
-		
-	for (;;)
-	{	
-	//	MPU6050_get
- 		if(xQueueReceive(Queue_Senzor_Task,&XYZ,portMAX_DELAY)==pdPASS)
-  		{	
-			  packet_count = XYZ.temp/6;
-			  temp[0]=0;
-			  temp[1]=0;
-			  temp[2]=0;
- 			 for (short i=0;i< packet_count;i++)
- 			 {
- 				temp[0]=((((short)XYZ.MPU_FIFO[i++])<< 8 ) | XYZ.MPU_FIFO[i++]);//-offset[0];
- 				temp[1]=((((short)XYZ.MPU_FIFO[i++]) << 8) | XYZ.MPU_FIFO[i++]);//-offset[1];
- 				temp[2]=((((short)XYZ.MPU_FIFO[i++]) << 8) | XYZ.MPU_FIFO[i]);//-offset[2];
-// 				
-     				temp[0]-=offset[0];
-     				temp[1]-=offset[1];
-     				temp[2]-=offset[2];
-// // // 				
-//  				f_temp[0]=(float)((temp[0]*0.32f)*0.001f);
-//  				f_temp[1]=(float)((temp[1]*0.32f)*0.001f);
-//  				f_temp[2]=(float)((temp[2]*0.32f)*0.001f);
-// // 				
-//    				uhel[0]+=(float)f_temp[0];
-//    				uhel[1]+=(float)f_temp[1];
-//    				uhel[2]+=(float)f_temp[2];
+for (;;)
+{	
+	  		
+#if (RAW_MPU9150==1)
 				
-								
-			 }
-// 			  temp[0]/= packet_count;
-// 			  temp[1]/= packet_count;
-// 			  temp[2]/= packet_count;
-		//	if(xTimerStart(MPU_Timer,0)!=pdPASS){}
-// 	
-//      			temp[0]=0;//(short)(uhel[0]);
-//         		temp[1]=(short)(uhel[1]);
-//         		temp[2]=(short)(uhel[2]);
-// 				
-			Semtech.Buffer[0]=(uint8_t)temp[0];	//LOW
-			Semtech.Buffer[1]=(uint8_t)(temp[0]>>8);		//HIGH
-			Semtech.Buffer[2]=(uint8_t) temp[1];;
-			Semtech.Buffer[3]=(uint8_t) (temp[1]>>8);
-			Semtech.Buffer[4]=(uint8_t) temp[2];
-			Semtech.Buffer[5]=(uint8_t)( temp[2]>>8);
+			ioport_set_pin_level(PERIODE_PIN,true);
+			MPU9150_getMotion3(XYZ.MPU_FIFO,offset);
+			ioport_set_pin_level(PERIODE_PIN,false);
 			
-			Semtech.Stat.Data_State=RFLR_STATE_TX_INIT;
-			Semtech.Stat.Cmd=STAY_IN_STATE;	
+			GyroXYZ[0]=((((short)XYZ.MPU_FIFO[0]) << 8 ) | XYZ.MPU_FIFO[1])-offset[0];
+			GyroXYZ[1]=((((short)XYZ.MPU_FIFO[2]) << 8 ) | XYZ.MPU_FIFO[3])-offset[1];
+			GyroXYZ[2]=((((short)XYZ.MPU_FIFO[4]) << 8 ) | XYZ.MPU_FIFO[5])-offset[2];
 			
-			if (packet_count!=0)
+			LastTime=CurrentTime;
+			CurrentTime=xTaskGetTickCount();
+			dt=(double)((CurrentTime-LastTime));
+			
+			f_temp[0]=(float)((GyroXYZ[0]*0.06103515f)*dt/1000);
+			f_temp[1]=(float)((GyroXYZ[1]*0.06103515f)*dt/1000);
+			f_temp[2]=(float)((GyroXYZ[2]*0.06103515f)*dt/1000);
+			uhel[0]+=(float)f_temp[0];
+			uhel[1]+=(float)f_temp[1];
+			uhel[2]+=(float)f_temp[2];
+				 			
+#elif ((RAW_INT_MPU9150==1))		
+		 
+		if(xQueueReceive(Queue_Senzor_Task,&XYZ,portMAX_DELAY)==pdPASS)
+		{	ioport_set_pin_level(PERIODE_PIN,true);
+			GyroXYZ[0]=((((short)XYZ.MPU_FIFO[0]) << 8 ) | XYZ.MPU_FIFO[1])-offset[0];
+			GyroXYZ[1]=((((short)XYZ.MPU_FIFO[2]) << 8 ) | XYZ.MPU_FIFO[3])-offset[1];
+			GyroXYZ[2]=((((short)XYZ.MPU_FIFO[4]) << 8 ) | XYZ.MPU_FIFO[5])-offset[2];
+			
+// 			LastTime=CurrentTime;
+// 			CurrentTime=xTaskGetTickCount();
+// 			dt=(double)((CurrentTime-LastTime));
+			dt=1;
+			f_temp[0]=(float)((GyroXYZ[0]*0.06103515f)*dt/1000);
+			f_temp[1]=(float)((GyroXYZ[1]*0.06103515f)*dt/1000);
+			f_temp[2]=(float)((GyroXYZ[2]*0.06103515f)*dt/1000);
+			uhel[0]+=(float)f_temp[0];
+			uhel[1]+=(float)f_temp[1];
+			uhel[2]+=(float)f_temp[2];
+			ioport_set_pin_level(PERIODE_PIN,false);
+		}
+		
+#elif (FIFO_MPU9150==1)
+
+		if(xQueueReceive(Queue_Senzor_Task,&XYZ,portMAX_DELAY)==pdPASS)
+		{		 
+			packet_count = 0;
+			while (XYZ.temp>0)
 			{
+				XYZ.temp-=6;
+				temp[0]=((((short)XYZ.MPU_FIFO[packet_count++]) << 8 ) | XYZ.MPU_FIFO[packet_count++]);//-offset[0];
+				temp[1]=((((short)XYZ.MPU_FIFO[packet_count++]) << 8) | XYZ.MPU_FIFO[packet_count++]);//-offset[1];
+				temp[2]=((((short)XYZ.MPU_FIFO[packet_count++]) << 8) | XYZ.MPU_FIFO[packet_count++]);//-offset[2];
+							  
+				temp[0]-=offset[0];
+				temp[1]-=offset[1];
+				temp[2]-=offset[2];
+							  
+				f_temp[0]=(float)((temp[0]*0.06103515f)*0.001f);
+				f_temp[1]=(float)((temp[1]*0.06103515f)*0.001f);
+				f_temp[2]=(float)((temp[2]*0.06103515f)*0.001f);
+							  
+				uhel[0]+=(float)f_temp[0];
+				uhel[1]+=(float)f_temp[1];
+				uhel[2]+=(float)f_temp[2];
+			}
+		}
+		
+#else
+# error "Please specifyWay to get a datta from MPU9150"
+#endif
+ 			  	
+    			temp[0]=(short)(uhel[0]);
+          		temp[1]=(short)(uhel[1]);
+          		temp[2]=(short)(uhel[2]);
+						
+//  				temp[0]	   =GyroXYZ[0];
+// 				temp[1]	   =GyroXYZ[1];
+//  				temp[2]	   =GyroXYZ[2];
+// 				
+				Semtech.Buffer[0]=(uint8_t)temp[0];	//LOW
+				Semtech.Buffer[1]=(uint8_t)(temp[0]>>8);		//HIGH
+				Semtech.Buffer[2]=(uint8_t) temp[1];;
+				Semtech.Buffer[3]=(uint8_t) (temp[1]>>8);
+				Semtech.Buffer[4]=(uint8_t) temp[2];
+				Semtech.Buffer[5]=(uint8_t)( temp[2]>>8);
+				
+				Semtech.Stat.Data_State=RFLR_STATE_TX_INIT;
+				Semtech.Stat.Cmd=STAY_IN_STATE;
+				
+				/* send data to MAtlab */
 				if(xQueueSend(Queue_RF_Task,&Semtech,1))	//pdPASS=1-
 				{
-					
+						
 				}
-			}
-			
+	
 
-		}
+		
 	}
 }
 
