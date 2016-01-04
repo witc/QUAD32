@@ -115,7 +115,7 @@ void MPU6050_Initialize()
 	MPU6050_I2C_ByteWrite(10,data, MPU6050_RA_USER_CTRL);    // Reset FIFO and DMP
 			
 	 /*set LPF and Fs to 8khz - internal */
-	 data[0]=1;	/* 3=42 hz - used in Afroflight, 4=21Hz cut off 0 & 7 = off*/ 
+	 data[0]=3;	/* 3=42 hz - used in Afroflight, 4=21Hz cut off 0 & 7 = off*/ 
 	 MPU6050_I2C_ByteWrite(10,&data[0], MPU6050_RA_CONFIG);
 	
 	 /* set sample rate */
@@ -495,9 +495,9 @@ void MPU9150_getMotion6(short* ax, short* ay, short* az, short* gx, short* gy, s
 }
 
 /* not fifo, but clear data */
-void MPU9150_getMotion3(uint8_t *buffer,short *offset)
+void MPU9150_getMotion66(uint8_t *buffer,short *offset)
 {
-	MPU6050_I2C_BufferRead(MPU6050_DEFAULT_ADDRESS,buffer,MPU6050_RA_GYRO_XOUT_H, 6);
+	MPU6050_I2C_BufferRead(MPU6050_DEFAULT_ADDRESS,buffer,MPU6050_RA_ACCEL_XOUT_H, 14);
 	
 }
 /* FIFO DATA */
@@ -508,25 +508,40 @@ short MPU9150_getMotion6_fifo(uint8_t* FIFO_MPU)
 	uint8_t data[3];
 	short i=0;
 	
-	/* disable fifo */
-   	data[0]=0;
-  //	MPU6050_I2C_ByteWrite(10,FIFO_MPU,MPU6050_RA_USER_CTRL);
-  	MPU6050_I2C_ByteWrite(10,data,MPU6050_RA_FIFO_EN);
-	
+// 	 	/* disable write to fifo  */
+// 	    	data[0]=0;
+// 	    	MPU6050_I2C_ByteWrite(10,data,MPU6050_RA_FIFO_EN);
+			
 	/* read count of Fifo */
 	MPU6050_I2C_BufferRead(10,data,MPU6050_RA_FIFO_COUNTH,2);
 	temp=(((short)data[0]) << 8) | data[1];
+	//temp-=6*25;	//budeme èíst o x Bytes ménì
+		
+	/* read FIFO */
+	if (temp>=6)
+	{
+		MPU6050_I2C_BufferRead(10,&FIFO_MPU[0],MPU6050_RA_FIFO_R_W,temp);	
+	}
+		
+// 		 	/* Enable Fifo, GYRO, Temp and Acc*/
+// 		   	data[0]=0x70;
+// 		  	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_FIFO_EN);
+
+
+// 	/* disable write to fifo  */
+//    	data[0]=0;
+//    	MPU6050_I2C_ByteWrite(10,data,MPU6050_RA_FIFO_EN);
+// 	
+// 	/* read count of Fifo */
+// 	MPU6050_I2C_BufferRead(10,data,MPU6050_RA_FIFO_COUNTH,2);
+// 	temp=(((short)data[0]) << 8) | data[1];
  	 
-	 /* read FIFO */
-	MPU6050_I2C_BufferRead(10,&FIFO_MPU[0],MPU6050_RA_FIFO_R_W,temp);
-
-	/* Fifo enable + FIFO reset */
-//    	data[0] =0x44;
-//    	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_USER_CTRL );
-
-	/* Enable Fifo, GYRO, Temp and Acc*/
-  	data[0]=0x70;
- 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_FIFO_EN);
+// 	 /* read FIFO */
+// 	MPU6050_I2C_BufferRead(10,&FIFO_MPU[0],MPU6050_RA_FIFO_R_W,temp);
+// 
+// 	/* Enable Fifo, GYRO, Temp and Acc*/
+//   	data[0]=0x70;
+//  	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_FIFO_EN);
 
 
 	return temp;
@@ -543,7 +558,7 @@ void MPU9150_Gyro_Tempr_Bias(short *offset)
 	static short Temperature;
 	static short Pre_Temp=0;
 	uint8_t *p_buffer;	//pointer for malloc buffer
-	#define NO_OF_PERIOD 100
+	#define NO_OF_PERIOD 20
 	uint16_t count=0;
 	uint16_t packet_count=0;
 	uint16_t count_sum=0;
@@ -600,7 +615,7 @@ void MPU9150_Gyro_Tempr_Bias_no_fifo(short *offset)
 	 delay_ms(100);
 	for (short i=0;i<NO_OF_SAMPLES;i++)
 	{
-		MPU9150_getMotion3(p_buffer,NULL)	;
+		MPU9150_getMotion66(p_buffer,NULL)	;
 		Temp=(short)((p_buffer[0] << 8) | p_buffer[1]);
 		Sum[0]+=Temp;
 		Temp=(short)((p_buffer[2] << 8) | p_buffer[3]);

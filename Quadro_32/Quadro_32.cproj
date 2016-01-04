@@ -472,6 +472,7 @@
       <Value>../src/ASF/common/services/serial/sam_uart</Value>
       <Value>../src/ASF/common/services/serial</Value>
       <Value>../src/ASF/sam/drivers/usart</Value>
+      <Value>../src/IMU</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
@@ -608,6 +609,7 @@
     <Folder Include="src\ASF\thirdparty\freertos\freertos-7.3.0\source\portable\gcc\sam\" />
     <Folder Include="src\ASF\thirdparty\freertos\freertos-7.3.0\source\portable\memmang\" />
     <Folder Include="src\config\" />
+    <Folder Include="src\IMU" />
     <Folder Include="src\Rf" />
     <Folder Include="src\Rf\SX1276_V" />
     <Folder Include="src\Rf\SX1276_V\FSK" />
@@ -666,6 +668,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Extern_init.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\IMU\MadgwickAHRS.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\IMU\MadgwickAHRS.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\main.h">

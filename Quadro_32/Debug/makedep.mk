@@ -22,6 +22,8 @@ src\ASF\thirdparty\freertos\freertos-7.3.0\source\FreeRTOS_CLI.c
 
 src\Extern_init.c
 
+src\IMU\MadgwickAHRS.c
+
 src\Rf\RF_Task.c
 
 src\Rf\SX1276_V\FSK\sx1276-Fsk.c

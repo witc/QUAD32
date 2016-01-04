@@ -142,28 +142,28 @@ int main (void)
 //  	};
 //  	usart_serial_init(USART_SERIAL, &usart_options);
 // 		
-
-	/* Create timer */
 	
 	Queue_RF_Task=xQueueCreate(3,sizeof(RF_Queue));
 	
 #if (RAW_MPU9150==1)
 
 #elif ((RAW_INT_MPU9150==1))
-	Queue_Senzor_Task=xQueueCreate(10,sizeof(MPU9150_Queue));	
+	Queue_Senzor_Task=xQueueCreate(8,sizeof(MPU9150_Queue));	
 #elif (FIFO_MPU9150==1)
 	Queue_Senzor_Task=xQueueCreate(2,sizeof(MPU9150_Queue));
-	
+	MPU_Timer=xTimerCreate("Timer_MPU",(20/portTICK_RATE_MS),pdTRUE,0,MPU_TimerCallback);
 #else
 # error "Please specifyWay to get a datta from MPU9150"
 #endif
 	
+	
+	
+		
 	/*Create Compass Task*/
-	xTaskCreate(Senzor_Task,"Senzor",configMINIMAL_STACK_SIZE+400,NULL, 1,&Senzor_id);	
+	xTaskCreate(Senzor_Task,"Senzor",configMINIMAL_STACK_SIZE+600,NULL, 1,&Senzor_id);	
 	/*Create Semtech Task*/
 	xTaskCreate(RF_Task,"sx1276",configMINIMAL_STACK_SIZE+400,NULL, 1,&Sx1276_id);
-	
-	
+		
 	
 	vTaskStartScheduler();
 		

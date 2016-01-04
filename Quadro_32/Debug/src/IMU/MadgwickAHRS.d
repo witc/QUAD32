@@ -1,6 +1,5 @@
-src/Senzors/Senzor_Task.d src/Senzors/Senzor_Task.o: \
- ../src/Senzors/Senzor_Task.c ../src/asf.h \
- ../src/ASF/sam/utils/compiler.h \
+src/IMU/MadgwickAHRS.d src/IMU/MadgwickAHRS.o: ../src/IMU/MadgwickAHRS.c \
+ ../src/IMU/MadgwickAHRS.h ../src/asf.h ../src/ASF/sam/utils/compiler.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\lib\gcc\arm-none-eabi\4.9.3\include\stddef.h \
  ../src/ASF/common/utils/parts.h \
  ../src/ASF/sam/utils/preprocessor/preprocessor.h \
@@ -163,20 +162,13 @@ src/Senzors/Senzor_Task.d src/Senzors/Senzor_Task.o: \
  ../src/ASF/sam/drivers/usart/usart.h ../src/config/conf_uart_serial.h \
  ../src/ASF/sam/drivers/wdt/wdt.h \
  ../src/ASF/sam/drivers/pio/pio_handler.h \
- c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h \
  ../src/ASF/thirdparty/CMSIS/Include/arm_math.h \
  ../src/ASF/thirdparty/CMSIS/Include/core_cm4.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\string.h \
  c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h \
- ../src/main.h ../src/Senzors/Senzor_Task.h \
- ../src/Senzors/STM_STEVAL/AKCE/Akce.h \
- ../src/Senzors/STM_STEVAL/MAG/Mag.h ../src/Extern_init.h \
- ../src/Rf/SX1276_V/sx1276-Hal.h ../src/Senzors/STM_STEVAL/GYRO/L3Gx.h \
- ../src/Senzors/STM_STEVAL/GYRO/Gyroscope.h \
- ../src/Senzors/STM_STEVAL/LSM303DLHC.h \
- ../src/Senzors/STM_STEVAL/AKCE/Akce-Hal.h \
- ../src/Senzors/Filtering/Filters.h ../src/Senzors/MPU9150/MPU_9150.h \
- ../src/IMU/MadgwickAHRS.h
+ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h
+
+../src/IMU/MadgwickAHRS.h:
 
 ../src/asf.h:
 
@@ -514,8 +506,6 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 ../src/ASF/sam/drivers/pio/pio_handler.h:
 
-c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h:
-
 ../src/ASF/thirdparty/CMSIS/Include/arm_math.h:
 
 ../src/ASF/thirdparty/CMSIS/Include/core_cm4.h:
@@ -524,28 +514,4 @@ c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-no
 
 c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\sys\string.h:
 
-../src/main.h:
-
-../src/Senzors/Senzor_Task.h:
-
-../src/Senzors/STM_STEVAL/AKCE/Akce.h:
-
-../src/Senzors/STM_STEVAL/MAG/Mag.h:
-
-../src/Extern_init.h:
-
-../src/Rf/SX1276_V/sx1276-Hal.h:
-
-../src/Senzors/STM_STEVAL/GYRO/L3Gx.h:
-
-../src/Senzors/STM_STEVAL/GYRO/Gyroscope.h:
-
-../src/Senzors/STM_STEVAL/LSM303DLHC.h:
-
-../src/Senzors/STM_STEVAL/AKCE/Akce-Hal.h:
-
-../src/Senzors/Filtering/Filters.h:
-
-../src/Senzors/MPU9150/MPU_9150.h:
-
-../src/IMU/MadgwickAHRS.h:
+c:\program\ files\ (x86)\atmel\studio\7.0\toolchain\arm\arm-gnu-toolchain\arm-none-eabi\include\math.h:
