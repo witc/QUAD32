@@ -444,22 +444,22 @@ extern "C" {
 #define BIT_STBY_XYZA       (BIT_STBY_XA | BIT_STBY_YA | BIT_STBY_ZA)
 #define BIT_STBY_XYZG       (BIT_STBY_XG | BIT_STBY_YG | BIT_STBY_ZG)
 
-void MPU6050_Initialize();
-bool MPU6050_TestConnection();
+void MPU6050_Initialize(void);
+bool MPU6050_TestConnection(void);
 
 // GYRO_CONFIG register
-uint8_t MPU6050_GetFullScaleGyroRange();
+uint8_t MPU6050_GetFullScaleGyroRange(void);
 void MPU6050_SetFullScaleGyroRange(uint8_t range);
 // ACCEL_CONFIG register
-uint8_t MPU6050_GetFullScaleAccelRange();
+uint8_t MPU6050_GetFullScaleAccelRange(void);
 void MPU6050_SetFullScaleAccelRange(uint8_t range);
 
 // PWR_MGMT_1 register
-bool MPU6050_GetSleepModeStatus();
+bool MPU6050_GetSleepModeStatus(void);
 void MPU6050_SetSleepModeStatus(uint8_t NewState);
 void MPU6050_SetClockSource(uint8_t source);
 // WHO_AM_I register
-uint8_t MPU6050_GetDeviceID();
+uint8_t MPU6050_GetDeviceID(void);
 
 void MPU6050_GetRawAccelGyro(short *AccelGyro);
 
@@ -468,7 +468,7 @@ void MPU6050_WriteBit(uint8_t slaveAddr, uint8_t regAddr, uint8_t bitNum, uint8_
 void MPU6050_ReadBits(uint8_t slaveAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t *data);
 void MPU6050_ReadBit(uint8_t slaveAddr, uint8_t regAddr, uint8_t bitNum, uint8_t *data);
 
-void MPU6050_I2C_Init();
+void MPU6050_I2C_Init(void);
 void MPU6050_I2C_ByteWrite(uint8_t slaveAddr, uint8_t* pBuffer, uint8_t writeAddr);
 void MPU6050_I2C_BufferRead(uint8_t slaveAddr,uint8_t* pBuffer, uint8_t readAddr, short NumByteToRead);
 void MPU9150_getMotion9(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int16_t* gy, int16_t* gz, int16_t* mx, int16_t* my, int16_t* mz);

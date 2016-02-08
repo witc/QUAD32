@@ -71,10 +71,10 @@
 #define configCPU_CLOCK_HZ				( sysclk_get_cpu_hz() )
 #define configTICK_RATE_HZ				( ( portTickType ) 1000 )
 #define configMAX_PRIORITIES			( ( unsigned portBASE_TYPE ) 5 )
-#define configMINIMAL_STACK_SIZE		( ( unsigned short ) 130 )
+#define configMINIMAL_STACK_SIZE		( ( unsigned short ) 200 )
 #define configTOTAL_HEAP_SIZE			( ( size_t ) ( 40960 ) )
 #define configMAX_TASK_NAME_LEN			( 12 )
-#define configUSE_TRACE_FACILITY		1
+#define configUSE_TRACE_FACILITY		0
 #define configUSE_16_BIT_TICKS			0
 #define configIDLE_SHOULD_YIELD			1
 #define configUSE_MUTEXES				1
@@ -84,6 +84,7 @@
 #define configUSE_MALLOC_FAILED_HOOK	0	
 #define configUSE_APPLICATION_TASK_TAG	0
 #define configUSE_COUNTING_SEMAPHORES	1
+#define configUSE_TICKLESS_IDLE			0
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES 			0
@@ -92,7 +93,7 @@
 /* Software timer definitions. */
 #define configUSE_TIMERS				1
 #define configTIMER_TASK_PRIORITY		( configMAX_PRIORITIES - 1 )
-#define configTIMER_QUEUE_LENGTH		5
+#define configTIMER_QUEUE_LENGTH		2
 #define configTIMER_TASK_STACK_DEPTH	( configMINIMAL_STACK_SIZE * 2 )
 
 /* Set the following definitions to 1 to include the API function, or zero
@@ -146,6 +147,7 @@ to all Cortex-M ports, and do not rely on any particular library functions. */
 header file. */
 #define configASSERT( x ) if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); for( ;; ) __asm volatile( "NOP" ); }
 #define INCLUDE_MODULE_TEST 0
+
 
 #endif /* FREERTOS_CONFIG_H */
 

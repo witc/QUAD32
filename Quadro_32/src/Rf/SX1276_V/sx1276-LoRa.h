@@ -46,7 +46,7 @@ typedef struct sLoRaSettings
  * RF packet definition
  */
 #define RF_BUFFER_SIZE_MAX                          256
-#define RF_BUFFER_SIZE                              256
+#define RF_BUFFER_SIZE                              100
 
 /*!
  * RF state machine
@@ -885,5 +885,6 @@ void SX1276LoRaSetRFState( uint8_t state );
  *                                   RF_TX_DONE, RF_TX_TIMEOUT]
  */
 uint32_t SX1276LoRaProcess( void );
+void SX1276LoRaReset( void );
 
 #endif //__SX1276_LORA_H__

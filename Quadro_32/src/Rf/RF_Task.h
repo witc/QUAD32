@@ -21,6 +21,7 @@ uint8_t Check_status(char Line);
 void Start_RX_LR(void);
 void Start_RX_FSK(void);
 void vTimerLastCom_CallBack(xTimerHandle pxTimer);
+void Rf_mode(RF_Queue *Sem_in);
 
 
 #endif /* RF_TASK_H_ */

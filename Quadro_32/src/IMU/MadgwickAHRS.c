@@ -404,9 +404,11 @@ float invSqrt(float x) {
 // 	y = y * (1.5f - (halfx * y * y));
 // 	return y;
 	
- 	unsigned int i = 0x5F1F1412 - (*(unsigned int*)&x >> 1);
- 	float tmp = *(float*)&i;
- 	return (tmp * (1.69000231f - 0.714158168f * x * tmp * tmp));
+//  	unsigned int i = 0x5F1F1412 - (*(unsigned int*)&x >> 1);
+//  	float tmp = *(float*)&i;
+//  	return (tmp * (1.69000231f - 0.714158168f * x * tmp * tmp));
+
+	return 1/sqrtf(x);
 }
 
 

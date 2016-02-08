@@ -71,7 +71,7 @@ const double RssiOffset[] =
 tLoRaSettings LoRaSettings =
 {
 	869525000,        // RFFrequency
-	0,               // Power
+	-10,               // Power
 	9,                // SignalBw [0: 7.8kHz, 1: 10.4 kHz, 2: 15.6 kHz, 3: 20.8 kHz, 4: 31.2 kHz,
 	// 5: 41.6 kHz, 6: 62.5 kHz, 7: 125 kHz, 8: 250 kHz, 9: 500 kHz, other: Reserved]
 	//pro mensi nez 62,5 je dulezite pouzit TCXO as f reference
@@ -84,7 +84,7 @@ tLoRaSettings LoRaSettings =
 	4,                // HopPeriod Hops every frequency hopping period symbols
 	200,              // TxPacketTimeout
 	1500,              // RxPacketTimeout
-	6,              // PayloadLength (used for implicit header mode)
+	8,              // PayloadLength (used for implicit header mode)
 };
 
 
@@ -97,7 +97,7 @@ void SX1276LoRaInit( void )
     SX1276LoRaSetOpMode( RFLR_OPMODE_STANDBY );	
 	SX1276LoRaSetDefaults( );
 		
-	SX1276ReadBuffer( 0x1,&SX1276LR, 0x70 - 1 );
+	SX1276ReadBuffer( 0x1,(uint8_t*)&SX1276LR, 0x70 - 1 );
        
     // set the RF settings 
     SX1276LoRaSetRFFrequency( LoRaSettings.RFFrequency,&SX1276LR );
@@ -205,8 +205,7 @@ void SX1276LoRaSetDefaults( void )
 
 void SX1276LoRaReset( void )
 {
-    uint32_t startTick;
-    
+        
     SX1276SetReset( RADIO_RESET_ON );
     
     // Wait 1ms
@@ -220,11 +219,10 @@ void SX1276LoRaReset( void )
 
 void SX1276LoRaSetOpMode( uint8_t opMode )
 {	
-		static uint8_t opModePrev = RFLR_OPMODE_STANDBY;
-		static bool antennaSwitchTxOnPrev = true;
+		//static uint8_t opModePrev = RFLR_OPMODE_STANDBY;
 		bool antennaSwitchTxOn = false;
 
-		opModePrev = SX1276LR.RegOpMode & ~RFLR_OPMODE_MASK;
+		//opModePrev = SX1276LR.RegOpMode & ~RFLR_OPMODE_MASK;
 
 
 		if( opMode == RFLR_OPMODE_TRANSMITTER )
@@ -236,7 +234,7 @@ void SX1276LoRaSetOpMode( uint8_t opMode )
 			antennaSwitchTxOn = false;
 		}
 
-	//	RXTX( antennaSwitchTxOn ); // Antenna switch control
+		RXTX( antennaSwitchTxOn ); // Antenna switch control
 
 		SX1276LR.RegOpMode = ( SX1276LR.RegOpMode & RFLR_OPMODE_MASK ) | opMode;
 		

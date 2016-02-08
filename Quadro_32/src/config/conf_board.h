@@ -66,6 +66,6 @@
 #define PERIODE_PIN				PIO_PA17_IDX
 #define PERIODE_PIN_INT			PIO_PA21_IDX
 
-#define USART_TXD_PIN            IOPORT_CREATE_PIN(PIOA, 6)
+#define USART_TXD_PIN            IOPORT_CREATE_PIN(PIOB, 3)
 
 #endif /* CONF_BOARD_H */

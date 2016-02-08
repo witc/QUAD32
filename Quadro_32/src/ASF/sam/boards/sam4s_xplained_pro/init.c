@@ -42,7 +42,7 @@
 /*
  * Support and FAQ: visit <a href="http://www.atmel.com/design-support/">Atmel Support</a>
  */
-
+#include <asf.h>
 #include <board.h>
 #include <gpio.h>
 #include <ioport.h>
@@ -66,6 +66,13 @@ void board_init(void)
 	ioport_init();
 
 	//Compass
+	ioport_set_pin_dir(I2C_SCL_PIN, IOPORT_DIR_OUTPUT);
+	ioport_set_pin_dir(I2C_SDA_PIN, IOPORT_DIR_OUTPUT);
+	
+	ioport_set_pin_level(I2C_SCL_PIN,false);
+	ioport_set_pin_level(I2C_SDA_PIN,false);
+	delay_ms(15);
+	
 	gpio_configure_pin(I2C_SCL_PIN, TWI0_CLK_FLAGS);
 	gpio_configure_pin(I2C_SDA_PIN, TWI0_DATA_FLAGS);
 		
@@ -74,8 +81,8 @@ void board_init(void)
 	
 	ioport_set_pin_dir(USART_TXD_PIN, IOPORT_DIR_OUTPUT);
 	
-	ioport_set_pin_dir(I2C_SCL_PIN, IOPORT_DIR_OUTPUT);
-	ioport_set_pin_dir(I2C_SDA_PIN, IOPORT_DIR_OUTPUT);
+	/* LED output */
+	ioport_set_pin_dir(LEDG,1);
 	
 }
 

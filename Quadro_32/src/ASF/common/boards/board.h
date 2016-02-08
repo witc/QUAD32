@@ -59,16 +59,22 @@
  * \{
  */
 
-#define USART_SERIAL                     USART0
-#define USART_SERIAL_BAUDRATE            19200
-#define USART_SERIAL_CHAR_LENGTH         8
-#define USART_SERIAL_PARITY             0
-#define USART_SERIAL_STOP_BIT            false
+
+
 #include "compiler.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define UART_SERIAL                     UART1
+#define USART_SERIAL_BAUDRATE            19200
+#define USART_SERIAL_CHAR_LENGTH         8
+#define USART_SERIAL_PARITY             0
+#define USART_SERIAL_STOP_BIT            false
+
+
+#define LEDG					PIO_PB1_IDX
 
 
 /*! \name Base Boards

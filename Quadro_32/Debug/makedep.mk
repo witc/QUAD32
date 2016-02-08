@@ -10,6 +10,10 @@ src\ASF\common\services\serial\usart_serial.c
 
 src\ASF\common\services\spi\sam_spi\spi_master.c
 
+src\ASF\common\utils\stdio\read.c
+
+src\ASF\common\utils\stdio\write.c
+
 src\ASF\sam\drivers\spi\spi.c
 
 src\ASF\sam\drivers\twi\twi.c
@@ -25,10 +29,6 @@ src\Extern_init.c
 src\IMU\MadgwickAHRS.c
 
 src\Rf\RF_Task.c
-
-src\Rf\SX1276_V\FSK\sx1276-Fsk.c
-
-src\Rf\SX1276_V\FSK\sx1276-FskMisc.c
 
 src\Rf\SX1276_V\sx1276-Fchp.c
 

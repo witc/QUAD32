@@ -806,15 +806,15 @@ void L3gy_Calibrate(short *offset)
 	short GyroXYZ[3];
 	#define GAC 5000
 	
-	long long		Suma_x=0;	//int - 32
-	long long		Suma_y=0;	//long long - 64
-	long long		Suma_z=0;
+	 long		Suma_x=0;	//int - 32
+	 long		Suma_y=0;	//long long - 64
+	 long		Suma_z=0;
 	
 		
-	short	    Temp_x = 0;
-	short	    Temp_y = 0;
-	short	    Temp_z = 0;
-	
+// 	short	    Temp_x = 0;
+// 	short	    Temp_y = 0;
+// 	short	    Temp_z = 0;
+// 	
 
 	for (int counter=0;counter<GAC;counter++)
 	{

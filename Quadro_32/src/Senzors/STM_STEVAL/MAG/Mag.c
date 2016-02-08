@@ -7,6 +7,7 @@
 
 #include <asf.h>
 #include <math.h>
+#include <arm_math.h>
 #include "Mag.h"
 #include "Mag-Hal.h"
 #include "Main.h"
@@ -65,10 +66,8 @@ void Calibrate_Comp(MAG_XYZ * COMPAS)
 	short MIN_Y=20000;
 	short MIN_Z=20000;
 	 
-	long long Kvadranty=0;
-    LCD_Queue LCD;
-	 
-			 
+	long Kvadranty=0;
+   			 
 	do 
 	{
 		 Mag_get_b(COMPAS);

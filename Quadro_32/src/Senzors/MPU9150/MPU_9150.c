@@ -72,22 +72,22 @@ struct gyro_reg_s {
  * the clock source to use the X Gyro for reference, which is slightly better than
  * the default internal clock source.
  */
-void MPU6050_Initialize()
+void MPU6050_Initialize(void)
 {	
 	
 	unsigned char data[6];
 	
 	delay_ms(100);
-	 /* Wake up chip. */
-	 data[0] = 0x00;
-	 MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
-	delay_ms(100);
+
 	
     /* Reset device. */
     data[0] = BIT_RESET;
 	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
 	delay_ms(100);
 	
+	/* Wake up chip. */
+	data[0] = 0x00;
+	MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
 	
 	while(!MPU6050_TestConnection())
 	{
@@ -104,7 +104,6 @@ void MPU6050_Initialize()
  	 data[0] = 0x00;
  	 MPU6050_I2C_ByteWrite(10,&data[0],MPU6050_RA_PWR_MGMT_1 );
 	
-// Configure device for bias calculation
 	data[0] = 0x00;
 	MPU6050_I2C_ByteWrite(10,data, MPU6050_RA_INT_ENABLE);   // Disable all interrupts
 	MPU6050_I2C_ByteWrite(10,data, MPU6050_RA_FIFO_EN);      // Disable FIFO
@@ -163,7 +162,7 @@ void MPU6050_Initialize()
  * Make sure the device is connected and responds as expected.
  * @return True if connection is valid, FALSE otherwise
  */
-bool MPU6050_TestConnection()
+bool MPU6050_TestConnection(void)
 {
 	return MPU6050_GetDeviceID() == 0x34 ? true : false; //0b110100; 8-bit representation in hex = 0x34
 }
@@ -175,7 +174,7 @@ bool MPU6050_TestConnection()
  * @see MPU6050_WHO_AM_I_BIT
  * @see MPU6050_WHO_AM_I_LENGTH
  */
-uint8_t MPU6050_GetDeviceID()
+uint8_t MPU6050_GetDeviceID(void)
 {
     uint8_t tmp;
     MPU6050_ReadBits(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_WHO_AM_I, MPU6050_WHO_AM_I_BIT, MPU6050_WHO_AM_I_LENGTH, &tmp);
@@ -250,7 +249,7 @@ void MPU6050_SetFullScaleGyroRange(uint8_t range)
  * @see MPU6050_GCONFIG_FS_SEL_BIT
  * @see MPU6050_GCONFIG_FS_SEL_LENGTH
  */
-uint8_t MPU6050_GetFullScaleGyroRange()
+uint8_t MPU6050_GetFullScaleGyroRange(void)
 {
     uint8_t tmp;
     MPU6050_ReadBits(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_GYRO_CONFIG, MPU6050_GCONFIG_FS_SEL_BIT, MPU6050_GCONFIG_FS_SEL_LENGTH, &tmp);
@@ -274,7 +273,7 @@ uint8_t MPU6050_GetFullScaleGyroRange()
  * @see MPU6050_ACONFIG_AFS_SEL_BIT
  * @see MPU6050_ACONFIG_AFS_SEL_LENGTH
  */
-uint8_t MPU6050_GetFullScaleAccelRange()
+uint8_t MPU6050_GetFullScaleAccelRange(void)
 {
     uint8_t tmp;
     MPU6050_ReadBits(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_ACCEL_CONFIG, MPU6050_ACONFIG_AFS_SEL_BIT, MPU6050_ACONFIG_AFS_SEL_LENGTH, &tmp);
@@ -301,7 +300,7 @@ void MPU6050_SetFullScaleAccelRange(uint8_t range)
  * @see MPU6050_RA_PWR_MGMT_1
  * @see MPU6050_PWR1_SLEEP_BIT
  */
-bool MPU6050_GetSleepModeStatus()
+bool MPU6050_GetSleepModeStatus(void)
 {
     uint8_t tmp;
     MPU6050_ReadBit(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_PWR_MGMT_1, MPU6050_PWR1_SLEEP_BIT, &tmp);
@@ -506,8 +505,7 @@ short MPU9150_getMotion6_fifo(uint8_t* FIFO_MPU)
 	
 	short temp;
 	uint8_t data[3];
-	short i=0;
-	
+		
 // 	 	/* disable write to fifo  */
 // 	    	data[0]=0;
 // 	    	MPU6050_I2C_ByteWrite(10,data,MPU6050_RA_FIFO_EN);
@@ -555,8 +553,8 @@ void MPU9150_Gyro_Tempr_Bias(short *offset)
 {
 	 long Sum[4]={0,0,0,0};	//32 bits
 	static short Temp;
-	static short Temperature;
-	static short Pre_Temp=0;
+	//static short Temperature;
+	//static short Pre_Temp=0;
 	uint8_t *p_buffer;	//pointer for malloc buffer
 	#define NO_OF_PERIOD 20
 	uint16_t count=0;

@@ -16,11 +16,11 @@
 #include "sx1276.h"
 #include "sx1276-Fchp.h"
 #include "sx1276-LoRa.h"
-#include "sx1276-Fsk.h"
 #include "Extern_init.h"
 
 /* Define a type of modulation*/
 #define LORA	1
+#define FSK		0
 
 #define RSSI_OFFSET                                 -137.0
 #define NOISE_ABSOLUTE_ZERO                         -174.0
@@ -36,19 +36,14 @@ uint8_t pole[]={1,2,3,4,5,6};
 // Default settings
 extern tLoRaSettings LoRaSettings;
 extern tSX1276LR SX1276LR;
-extern tSX1276 SX1276;
-
 
 
 /****************************************************************************/
 void RX_done_LR(RF_Queue *Semtech,short *crc)
 {	
 	static short RxPacketSize = 0;
-	static int8_t RxPacketSnrEstimate;
 	static double RxPacketRssiValue;
-	static char RxGain = 1;
-	static long RxTimeoutTimer = 0;
-	static char RFBuffer[RF_BUFFER_SIZE];
+	static uint8_t RFBuffer[RF_BUFFER_SIZE];
 	
 	SX1276LoRaSetOpMode( RFLR_OPMODE_STANDBY );
 		
@@ -127,13 +122,13 @@ void RX_done_LR(RF_Queue *Semtech,short *crc)
 			
 	}
 	
-	SX1276Read(0xC,&Semtech->AGC);
-	Semtech->AGC>>=5;
-		
-	for (char i=0;i<255;i++)
-	{
-		Semtech->Buffer[i]=RFBuffer[i];
-	}
+// 	SX1276Read(0xC,&Semtech->AGC);
+// 	Semtech->AGC>>=5;
+// 		
+// 	for (char i=0;i<100;i++)
+// 	{
+// 		Semtech->Buffer[i]=(char)RFBuffer[i];
+// 	}
 	
 	Semtech->Stat.Data_State=RFLR_STATE_RX_INIT;
 	Semtech->Stat.Cmd=STAY_IN_STATE;
@@ -150,9 +145,9 @@ void RX_done_LR(RF_Queue *Semtech,short *crc)
 
 void Start_RX_LR(void)
 {	
-	RF_Queue Semtech;
+	//RF_Queue Semtech;
 	
-	static uint8_t RFBuffer[RF_BUFFER_SIZE];
+	//static uint8_t RFBuffer[RF_BUFFER_SIZE];
 	//RF_STAT Semtech;
 	
 	/* Clear all Flags IRQ */
@@ -208,8 +203,8 @@ void Start_RX_LR(void)
 /************************************************************************/
 void Send_data_LR(uint8_t *data,uint8_t Length)
 {
-	uint8_t Temp=0;
-	uint16_t Timeout=2600;	// u kzadeho oboju musi byt jinak ?!?!?
+	//uint8_t Temp=0;
+//	uint16_t Timeout=2600;	// u kzadeho oboju musi byt jinak ?!?!?
 				
 	// see errata note
 	//SX1276LoRaSetOpMode( RFLR_OPMODE_SLEEP );
@@ -259,50 +254,12 @@ void Send_data_LR(uint8_t *data,uint8_t Length)
 
 }
 
-/**************************************************************************/
-void Send_data_FSK(uint8_t *data,uint8_t TxPacketSize)
-{	
-	uint8_t DataChunkSize =0;
-  // Packet DIO mapping setup
-  //                           PacketSent,               FifoLevel,              FifoFull,               TxReady
-  SX1276.RegDioMapping1 = RF_DIOMAPPING1_DIO0_00;// | RF_DIOMAPPING1_DIO1_00 | RF_DIOMAPPING1_DIO2_00 | RF_DIOMAPPING1_DIO3_01;
-  //                           LowBat,                   Data
-  SX1276.RegDioMapping2 =0;// RF_DIOMAPPING2_DIO4_00 | RF_DIOMAPPING2_DIO5_10;
-  SX1276WriteBuffer( REG_DIOMAPPING1, &SX1276.RegDioMapping1, 2 );
 
-  SX1276.RegFifoThresh = RF_FIFOTHRESH_TXSTARTCONDITION_FIFONOTEMPTY;// | 0x18; // 24 bytes of data
-  SX1276Write( REG_FIFOTHRESH, SX1276.RegFifoThresh );
-	
-  delay_ms(1);
-  SX1276FskSetOpMode( RF_OPMODE_TRANSMITTER );
- 
- // if( DIO3 == 1 )    // TxReady
-	//delay_ms(800);
-	
-// 	if( ( SX1276.RegPacketConfig1 & RF_PACKETCONFIG1_PACKETFORMAT_VARIABLE ) == RF_PACKETCONFIG1_PACKETFORMAT_VARIABLE )
-// 	{
-// 		SX1276WriteFifo( ( uint8_t* )&TxPacketSize, 1 );
-// 	}
-	
-	if( ( TxPacketSize > 0 ) && ( TxPacketSize <= 64 ) )
-	{
-		DataChunkSize = TxPacketSize;
-	}
-	else
-	{
-		DataChunkSize = 32;
-	}
-	
-	SX1276WriteFifo( data, DataChunkSize );
-	
-	
-}
-/**************************************************************************/
 
 uint8_t Check_status(char Line)
 {
-	uint8_t Temp;
-	RF_Queue Semtech;
+	//uint8_t Temp;
+	//RF_Queue Semtech;
 		
 		
 		if (Line==0)
@@ -331,7 +288,7 @@ void Rf_mode(RF_Queue *Sem_in)
 {	
 	RF_Queue Semtech;
 	short Valid_packet=0;
-	static uint8_t TX_READY=1;
+	//static uint8_t TX_READY=1;
 
 	switch (Sem_in->Stat.Data_State)
 	{
@@ -407,10 +364,10 @@ void Rf_mode(RF_Queue *Sem_in)
 		
 		case RFLR_STATE_TX_INIT:
 			
-			#ifdef LORA
+			#if (LORA==1)
 				Send_data_LR(Sem_in->Buffer,LoRaSettings.PayloadLength);
 			
-			#elif FSK
+			#elif (FSK==1)
 				Send_data_FSK(Sem_in->Buffer,6);
 				
 			#else
@@ -469,14 +426,14 @@ void Rf_mode(RF_Queue *Sem_in)
 void RF_Task(void *pvParameters)
 {
 	RF_Queue Semtech;
-	MANAGER_TASK Manage_data;
+	//MANAGER_TASK Manage_data;
 	
 //  	Semtech.Stat.Data_State=RFLR_STATE_RX_INIT;
 //  	Semtech.Stat.Cmd=STAY_IN_STATE;
 //  	xQueueSend(Queue_RF_Task,&Semtech,portMAX_DELAY);
  	
-	portTickType LastWakeTime;
-	LastWakeTime=xTaskGetTickCount();
+// 	portTickType LastWakeTime;
+// 	LastWakeTime=xTaskGetTickCount();
 	 
 	taskENTER_CRITICAL();
 	SX1276Init();

@@ -9,8 +9,8 @@
 #ifndef MAIN_H_
 #define MAIN_H_
 
-#define BOARD_ID_USART             ID_USART1
-#define BOARD_USART                USART0
+#define BOARD_ID_USART             ID_UART1
+#define BOARD_USART                UART1
 #define BOARD_USART_BAUDRATE       19200
 
 #define FIFO_MPU9150		0
@@ -113,7 +113,7 @@ typedef struct{
 typedef struct{
 	
 	short Rssi;
-	uint8_t Buffer[256];
+	uint8_t Buffer[100];
 	char AGC;
 	MANAGE_TASK	Stat;
 	

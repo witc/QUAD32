@@ -22,17 +22,21 @@ void Semtech_IRQ2(void);
 #define  RF_NIRQ1_LINE		2	//as EXTINT2 ? => 2
 
 
-//GPS
-/** USART Interface */
-#define CONF_UART              USART1
+/** UART Interface */
+#define CONF_UART            CONSOLE_UART
 /** Baudrate setting */
-#define CONF_UART_BAUDRATE     9600
-/** Character length setting */
-#define CONF_UART_CHAR_LENGTH  US_MR_CHRL_8_BIT
+#define CONF_UART_BAUDRATE  19200
 /** Parity setting */
-#define CONF_UART_PARITY       US_MR_PAR_NO
-/** Stop bits setting */
-#define CONF_UART_STOP_BITS    US_MR_NBSTOP_1_BIT
+#define CONF_UART_PARITY     US_MR_PAR_NO
+
+/* Configure UART pins PIO */
+#define CONF_UART_PIO PINS_UART1_PIO
+
+/* Configure UART pins */
+#define CONF_PINS_UART PINS_UART1
+
+/* Configure UART pins flags */
+#define CONF_PINS_UART_FLAGS PINS_UART1_FLAGS
 
 #define PDCA_GPS_Done			USART1_Handler
 #define GPS_IRQ                 USART1_IRQn

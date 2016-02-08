@@ -4,14 +4,12 @@
 #include "sx1276.h"
 #include "sx1276-Hal.h"
 #include "sx1276-LoRa.h"
-#include "sx1276-Fsk.h"
 #include "main.h"
 
 /*!
  * SX1276 registers variable
  */
  extern tSX1276LR SX1276LR;
- extern tSX1276 SX1276;
 
 struct spi_device device_rf = {
 	.id = 0,

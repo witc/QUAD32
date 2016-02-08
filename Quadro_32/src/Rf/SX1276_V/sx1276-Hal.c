@@ -161,7 +161,8 @@ void SX1276ReadFifo( uint8_t *buffer, uint8_t size )
 
 uint8_t SX1276ReadDio0( void )
 {
-	return (uint8_t)ioport_get_pin_level(SX1276_NIRQ0_PIN);
+	//return (uint8_t)ioport_get_pin_level(SX1276_NIRQ0_PIN);
+	return 0;
 }
 
 uint8_t SX1276ReadDio1( void )

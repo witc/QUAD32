@@ -8,8 +8,8 @@
  */ 
 
 
-#ifndef COMP-HAL_H_
-#define COMP-HAL_H_
+#ifndef COMP_HAL_H_
+#define COMP_HAL_H_
 
 void Mag_read(unsigned char Adress, unsigned char *Data, unsigned char Length);
 void Mag_send(unsigned char Adress, unsigned char *Data, unsigned char Length);

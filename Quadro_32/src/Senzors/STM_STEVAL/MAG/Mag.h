@@ -11,12 +11,12 @@
 
 
 typedef struct{
-	char X_L;
-	char X_H;
-	char Y_L;
-	char Y_H;
-	char Z_L;
-	char Z_H;
+	unsigned char X_L;
+	unsigned char X_H;
+	unsigned char Y_L;
+	unsigned char Y_H;
+	unsigned char Z_L;
+	unsigned char Z_H;
 	
 	short X;
 	short Y;
@@ -43,7 +43,6 @@ void Mag_get_b(MAG_XYZ *XYZ);
 void Calibrate_Comp(MAG_XYZ * COMP);
 
 
-#define PI					3.14159265359
 
 
 #endif /* COMP_H_ */

@@ -35,16 +35,19 @@
           <option id="common.services.layer.freertos.twi" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.services.basic.gpio" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.services.ioport" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="common.services.basic.serial" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.services.basic.spi_master" value="Add" config="standard_spi" content-id="Atmel.ASF" />
           <option id="common.services.basic.twi" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.utils.interrupt" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="common.utils.stdio.stdio_serial" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.drivers.pio" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.drivers.spi" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.drivers.twi" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="sam.drivers.uart" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="sam.drivers.usart" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.drivers.wdt" value="Add" config="" content-id="Atmel.ASF" />
           <option id="thirdparty.os.freertos.version" value="Add" config="7.3.0" content-id="Atmel.ASF" />
-          <option id="common.services.basic.serial" value="Add" config="" content-id="Atmel.ASF" />
-          <option id="sam.drivers.usart" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="common.services.basic.clock" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.applications.user_application.xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.utils" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.utils.cmsis.sam4s.source.template" value="Add" config="" content-id="Atmel.ASF" />
@@ -262,6 +265,9 @@
           <file path="src/Config/conf_uart_serial.h" framework="" version="3.27.3" source="common\services\serial\sam_uart\module_config\conf_uart_serial.h" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam/drivers/usart/usart.c" framework="" version="3.27.3" source="sam\drivers\usart\usart.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/sam/drivers/usart/usart.h" framework="" version="3.27.3" source="sam\drivers\usart\usart.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/common/utils/stdio/read.c" framework="" version="3.27.3" source="common\utils\stdio\read.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/common/utils/stdio/write.c" framework="" version="3.27.3" source="common\utils\stdio\write.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/common/utils/stdio/stdio_serial/stdio_serial.h" framework="" version="3.27.3" source="common\utils\stdio\stdio_serial\stdio_serial.h" changed="False" content-id="Atmel.ASF" />
         </files>
         <documentation help="http://asf.atmel.com/docs/3.27.3/common.applications.user_application.xplained_pro.sam4s_xplained_pro/html/index.html" />
         <offline-documentation help="" />
@@ -344,6 +350,7 @@
       <Value>../src/ASF/common/services/serial/sam_uart</Value>
       <Value>../src/ASF/common/services/serial</Value>
       <Value>../src/ASF/sam/drivers/usart</Value>
+      <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
@@ -401,6 +408,7 @@
       <Value>../src/ASF/common/services/serial/sam_uart</Value>
       <Value>../src/ASF/common/services/serial</Value>
       <Value>../src/ASF/sam/drivers/usart</Value>
+      <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
 </ArmGcc>
@@ -473,6 +481,10 @@
       <Value>../src/ASF/common/services/serial</Value>
       <Value>../src/ASF/sam/drivers/usart</Value>
       <Value>../src/IMU</Value>
+      <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
+      <Value>../src/Percipio</Value>
+      <Value>../src/Percipio/Config_template</Value>
+      <Value>../src/Percipio/include_percp</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
@@ -533,6 +545,7 @@
       <Value>../src/ASF/common/services/serial/sam_uart</Value>
       <Value>../src/ASF/common/services/serial</Value>
       <Value>../src/ASF/sam/drivers/usart</Value>
+      <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
@@ -563,6 +576,8 @@
     <Folder Include="src\ASF\common\services\twi\sam_twi\" />
     <Folder Include="src\ASF\common\utils\" />
     <Folder Include="src\ASF\common\utils\interrupt\" />
+    <Folder Include="src\ASF\common\utils\stdio\" />
+    <Folder Include="src\ASF\common\utils\stdio\stdio_serial\" />
     <Folder Include="src\ASF\sam\" />
     <Folder Include="src\ASF\sam\boards\" />
     <Folder Include="src\ASF\sam\boards\sam4s_xplained_pro\" />
@@ -612,7 +627,6 @@
     <Folder Include="src\IMU" />
     <Folder Include="src\Rf" />
     <Folder Include="src\Rf\SX1276_V" />
-    <Folder Include="src\Rf\SX1276_V\FSK" />
     <Folder Include="src\Senzors" />
     <Folder Include="src\Senzors\MPU9150" />
     <Folder Include="src\Senzors\Filtering" />
@@ -638,6 +652,15 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\ASF\common\services\spi\sam_spi\spi_master.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\ASF\common\utils\stdio\read.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <None Include="src\ASF\common\utils\stdio\stdio_serial\stdio_serial.h">
+      <SubType>compile</SubType>
+    </None>
+    <Compile Include="src\ASF\common\utils\stdio\write.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\ASF\sam\drivers\spi\spi.c">
@@ -683,18 +706,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Rf\RF_Task.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\Rf\SX1276_V\FSK\sx1276-Fsk.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\Rf\SX1276_V\FSK\sx1276-Fsk.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\Rf\SX1276_V\FSK\sx1276-FskMisc.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="src\Rf\SX1276_V\FSK\sx1276-FskMisc.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Rf\SX1276_V\sx1276-Fchp.c">

@@ -52,7 +52,7 @@ void MPU_9150_read(unsigned char Adress, unsigned char *Data, short Length)
 	taskEXIT_CRITICAL();
 }
 
-void MPU_9150_init()
+void MPU_9150_init(void)
 {
 	
 }
