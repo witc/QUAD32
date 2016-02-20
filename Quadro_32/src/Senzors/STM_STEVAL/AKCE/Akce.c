@@ -75,7 +75,7 @@ void computeAccelRTBias(void)
 	float accelSum[3] = { 0, 0, 0 };
 	
 	uint8_t ctrlx[2];
-	float LSM_Acc_Sensitivity;
+	float LSM_Acc_Sensitivity=0;
 	
 	/* Read the register content */
 	Lsm303dlhcAccI2CBufferRead(ctrlx, LSM_A_CTRL4_REG_ADDR,2);

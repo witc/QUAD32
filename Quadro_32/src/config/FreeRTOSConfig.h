@@ -67,19 +67,19 @@
 
 #define configUSE_PREEMPTION			1
 #define configUSE_IDLE_HOOK				1
-#define configUSE_TICK_HOOK				0
+#define configUSE_TICK_HOOK				0	//call callback every tick 
 #define configCPU_CLOCK_HZ				( sysclk_get_cpu_hz() )
 #define configTICK_RATE_HZ				( ( portTickType ) 1000 )
-#define configMAX_PRIORITIES			( ( unsigned portBASE_TYPE ) 5 )
+#define configMAX_PRIORITIES			( ( unsigned portBASE_TYPE ) 3 )
 #define configMINIMAL_STACK_SIZE		( ( unsigned short ) 200 )
 #define configTOTAL_HEAP_SIZE			( ( size_t ) ( 40960 ) )
-#define configMAX_TASK_NAME_LEN			( 12 )
+#define configMAX_TASK_NAME_LEN			( 10 )
 #define configUSE_TRACE_FACILITY		0
 #define configUSE_16_BIT_TICKS			0
 #define configIDLE_SHOULD_YIELD			1
 #define configUSE_MUTEXES				1
-#define configQUEUE_REGISTRY_SIZE		8
-#define configCHECK_FOR_STACK_OVERFLOW	0
+#define configQUEUE_REGISTRY_SIZE		8	//Defines the maximum number of queues and semaphores that can be registered
+#define configCHECK_FOR_STACK_OVERFLOW	1
 #define configUSE_RECURSIVE_MUTEXES		0
 #define configUSE_MALLOC_FAILED_HOOK	0	
 #define configUSE_APPLICATION_TASK_TAG	0

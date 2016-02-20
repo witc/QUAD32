@@ -24,56 +24,58 @@ volatile xTimerHandle System_Timer;
 /*NIRQ0 - From RF Semtech - RX Done*/
 void Semtech_IRQ0(void)
 {
-	//RF_Queue	Semtech;
+	RF_Queue	Semtech;
+	
+	signed portBASE_TYPE xHigherPriorityTaskWoken;
+	xHigherPriorityTaskWoken=pdTRUE;	//pøerušení se dokonèí celé= pdFalse
 	
 	NVIC_ClearPendingIRQ(PIOA_IRQn);
 	
-	
-	//Semtech.Stat.Cmd=STAY_IN_STATE;
-	//Semtech.Stat.Data_State=
-	Check_status(0);
-	xTaskResumeFromISR(Sx1276_id);
-// 	if(xQueueSendFromISR(Queue_RF_Task,&Semtech,3000)!=pdPASS);
-// 	{
-// 		
-// 	}
+	Semtech.Stat.Cmd=STAY_IN_STATE;
+	Semtech.Stat.Data_State=6;//Check_status(0);
+	//xTaskResumeFromISR(Sx1276_id);
+ 	while(xQueueSendToBackFromISR(Queue_RF_Task,&Semtech,&xHigherPriorityTaskWoken)!=pdTRUE);	//lepší používat Back..
+ 	
+   if (xHigherPriorityTaskWoken==pdTRUE) portYIELD();
+   
 	
 }
 
 /*NIRQ1 - From RF Semtech - Timeout*/
-void Semtech_IRQ1(void)
-{
-	RF_Queue	Semtech;
-	
-	NVIC_ClearPendingIRQ(PIOA_IRQn);
-
-	Semtech.Stat.Cmd=STAY_IN_STATE;
-	Semtech.Stat.Data_State=Check_status(1);
-	
-	if(xQueueSendFromISR(Queue_RF_Task,&Semtech,3000)!=pdPASS);
-	{
-		
-	}
-	
-	
-}
-
-/*NIRQ1 - From RF Semtech - CR error*/
-void Semtech_IRQ2(void)
-{
-	RF_Queue	Semtech;
-	
-	NVIC_ClearPendingIRQ(PIOA_IRQn);
-	
-	Semtech.Stat.Cmd=STAY_IN_STATE;
-	Semtech.Stat.Data_State=Check_status(2);
-	
-	if(xQueueSendFromISR(Queue_RF_Task,&Semtech,(long)3000)!=pdPASS);
-	{
-		
-	}
-	
-}
+// void Semtech_IRQ1(void)
+// {
+// 	RF_Queue	Semtech;
+// 	
+// 	NVIC_ClearPendingIRQ(PIOA_IRQn);
+// 
+// 	Semtech.Stat.Cmd=STAY_IN_STATE;
+// 	Semtech.Stat.Data_State=Check_status(1);
+// 	
+// 	if(xQueueSendFromISR(Queue_RF_Task,&Semtech,3000)!=pdPASS);
+// 	{
+// 		__ASM volatile("BKPT #01");
+// 		
+// 	}
+// 	
+// 	
+// }
+// 
+// /*NIRQ1 - From RF Semtech - CR error*/
+// void Semtech_IRQ2(void)
+// {
+// 	RF_Queue	Semtech;
+// 	
+// 	NVIC_ClearPendingIRQ(PIOA_IRQn);
+// 	
+// 	Semtech.Stat.Cmd=STAY_IN_STATE;
+// 	Semtech.Stat.Data_State=Check_status(2);
+// 	
+// 	if(xQueueSendFromISR(Queue_RF_Task,&Semtech,(long)3000)!=pdPASS);
+// 	{
+// 		
+// 	}
+// 	
+// }
 
 /**
  *  Configure UART console.
@@ -141,11 +143,11 @@ int main (void)
 // 		
 	
 	/* Initialize trace library before using any FreeRTOS APIs if enabled */
-	//Trace_Init();
+//	Trace_Init();
 	/* Start tracing */
 	//uiTraceStart();
 	
-	Queue_RF_Task=xQueueCreate(3,sizeof(RF_Queue));
+	Queue_RF_Task=xQueueCreate(6,sizeof(RF_Queue));
 	
 #if (RAW_MPU9150==1)
 
@@ -163,9 +165,9 @@ int main (void)
 	if(xTimerStart(System_Timer,0)!=pdPASS){}
 		
 	/*Create Compass Task*/
-	xTaskCreate(Senzor_Task,(const signed char * const) "Senzor",configMINIMAL_STACK_SIZE+500,NULL, 1,&Senzor_id);	
+	xTaskCreate(Senzor_Task,(const signed char * const) "Senzor",configMINIMAL_STACK_SIZE+400,NULL, 1,&Senzor_id);	
 	/*Create Semtech Task*/
-	xTaskCreate(RF_Task,(const signed char * const) "Sx1276",configMINIMAL_STACK_SIZE+300,NULL, 1,&Sx1276_id);
+	xTaskCreate(RF_Task,(const signed char * const) "Sx1276",configMINIMAL_STACK_SIZE+400,NULL, 1,&Sx1276_id);
 		
 	
 	vTaskStartScheduler();
@@ -180,7 +182,7 @@ void System_TimerCallback(xTimerHandle pxTimer)
 	static uint8_t temp=0;
 	
 	temp++;
-	if (temp>15)
+	if (temp>10)
 	{
 		ioport_set_pin_level(LEDG,true);
 		temp=0;
@@ -222,8 +224,7 @@ void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
     /* Run time stack overflow checking is performed if
     configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.  This hook
     function is called if a stack overflow is detected. */
-    taskDISABLE_INTERRUPTS();
-	
+    	
     for (;; ) {}
 }		
 

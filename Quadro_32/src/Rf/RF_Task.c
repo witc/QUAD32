@@ -288,7 +288,7 @@ void Rf_mode(RF_Queue *Sem_in)
 {	
 	RF_Queue Semtech;
 	short Valid_packet=0;
-	//static uint8_t TX_READY=1;
+	static uint8_t TX_READY=1;
 
 	switch (Sem_in->Stat.Data_State)
 	{
@@ -364,39 +364,28 @@ void Rf_mode(RF_Queue *Sem_in)
 		
 		case RFLR_STATE_TX_INIT:
 			
-			#if (LORA==1)
+			if (TX_READY==1)
+			{
+				TX_READY=0;
+				#if (LORA==1)
 				Send_data_LR(Sem_in->Buffer,LoRaSettings.PayloadLength);
-			
-			#elif (FSK==1)
+				
+				#elif (FSK==1)
 				Send_data_FSK(Sem_in->Buffer,6);
 				
-			#else
+				#else
 				#error "NO LORA or FSK Defined"
 				
-			#endif
+				#endif
+				
+				Semtech.Stat.Cmd=STAY_IN_STATE;
+				Semtech.Stat.Data_State=RFLR_STATE_TX_RUNNING;
+				if(xQueueSend(Queue_RF_Task,&Semtech,portMAX_DELAY)!=pdPASS)
+				{
+					
+				}
 			
-			vTaskSuspend(Sx1276_id);
-			SX1276Write( REG_LR_IRQFLAGS, RFLR_IRQFLAGS_TXDONE  );	
-			// optimize the power consumption by switching off the transmitter as soon as the packet has been sent
-			SX1276LoRaSetOpMode( RFLR_OPMODE_STANDBY);
-			SX1276Write( REG_LR_IRQFLAGS, RFLR_IRQFLAGS_TXDONE  );
-			//SX1276LoRaSetOpMode( RFLR_OPMODE_SLEEP);
-			
-// 			Semtech.Stat.Cmd=STAY_IN_STATE;
-// 			Semtech.Stat.Data_State=RFLR_STATE_TX_INIT;
-// 			Semtech.Buffer[0]=1;
-// 			Semtech.Buffer[1]=2;
-// 			Semtech.Buffer[2]=3;
-// 			Semtech.Buffer[3]=4;
-// 			Semtech.Buffer[4]=5;
-// 			Semtech.Buffer[5]=6;
-// 			if(xQueueSend(Queue_RF_Task,&Semtech,portMAX_DELAY)!=pdPASS)
-// 			{
-// 				
-// 			}
-			
-			//Run task again
-			//vTaskResume(Sx1276_id);
+			}
 			
 			break;
 		
@@ -405,6 +394,13 @@ void Rf_mode(RF_Queue *Sem_in)
 			break;
 		
 		case RFLR_STATE_TX_DONE:
+			
+			TX_READY=1;
+			
+			SX1276Write( REG_LR_IRQFLAGS, RFLR_IRQFLAGS_TXDONE  );	
+			// optimize the power consumption by switching off the transmitter as soon as the packet has been sent
+			SX1276LoRaSetOpMode( RFLR_OPMODE_STANDBY);
+			SX1276Write( REG_LR_IRQFLAGS, RFLR_IRQFLAGS_TXDONE  );
 		//	TX_READY=1;
 // 			Semtech.Stat.Cmd=STAY_IN_STATE;
 // 			Semtech.Stat.Data_State=RFLR_STATE_TX_INIT;
@@ -444,33 +440,10 @@ void RF_Task(void *pvParameters)
 // 	vSemaphoreCreateBinary(Lights_RF_Busy);
 // 	xSemaphoreTake(Lights_RF_Busy,0);
 	cpu_irq_enable();
-	Semtech.Stat.Cmd=STAY_IN_STATE;
-	Semtech.Stat.Data_State=RFLR_STATE_TX_INIT;
 	
-	/* Fill a buffer */
-	Semtech.Buffer[0]=0xAA;
-	Semtech.Buffer[1]=0xAB;
-	Semtech.Buffer[1]=0xAB;
-	Semtech.Buffer[2]=0xAD;
-	Semtech.Buffer[3]=0xAE;
-	Semtech.Buffer[5]=0xAF;
-	
-// 	uint8_t Pole[10];
-// 	Semtech.Buffer=Pole;
-		//xQueueSend(Queue_RF_Task,&Semtech,portMAX_DELAY);
 	for (;;)
 	{	
-// 		Semtech.Stat.Cmd=STAY_IN_STATE;
-// 		Semtech.Stat.Data_State=RFLR_STATE_TX_INIT;
-// 		
-// 		//Semtech.Buffer="1234567890";
-// 		xQueueSend(Queue_RF_Task,&Semtech,portMAX_DELAY);
-		
-		//delay_ms(2000);
-// 		gpio_toggle_pin(LED0_GPIO);
-// 		vTaskDelay(500/portTICK_RATE_MS);
-		
-		
+	
   		if(xQueueReceive(Queue_RF_Task,&Semtech,portMAX_DELAY)==pdPASS)
 		{
 								
@@ -511,6 +484,8 @@ void RF_Task(void *pvParameters)
 // 			}
 		}
 		
+		
+
 	
 	}
 }

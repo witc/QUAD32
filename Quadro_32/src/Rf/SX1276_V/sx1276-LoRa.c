@@ -84,7 +84,7 @@ tLoRaSettings LoRaSettings =
 	4,                // HopPeriod Hops every frequency hopping period symbols
 	200,              // TxPacketTimeout
 	1500,              // RxPacketTimeout
-	8,              // PayloadLength (used for implicit header mode)
+	6,              // PayloadLength (used for implicit header mode)
 };
 
 

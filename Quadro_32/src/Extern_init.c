@@ -55,7 +55,7 @@ void twi_init(void)
 	//pio_enable_interrupt(PIOA, PIO_PA24);
 	
 	NVIC_EnableIRQ(PIOA_IRQn);
-	NVIC_SetPriority(PIOA_IRQn,0);
+	NVIC_SetPriority(PIOA_IRQn,configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY);
 
  	
  }

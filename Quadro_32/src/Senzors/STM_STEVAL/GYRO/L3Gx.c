@@ -417,7 +417,7 @@ void L3gxReadAngRate(float* pfData,short *offset)
 {
   short buffer[3];
   uint8_t reg;
-  float fSensitivity;
+  float fSensitivity=0;
 
   /* read the register values */
   L3gxReadRawData(buffer);
