@@ -173,7 +173,9 @@ void sysclk_disable_usb(void)
 
 void sysclk_init(void)
 {
-	/* Set flash wait state to max in case the below clock switching. */
+	/* Set 
+	
+	 wait state to max in case the below clock switching. */
 	system_init_flash(CHIP_FREQ_CPU_MAX);
 
 	/* Config system clock setting */

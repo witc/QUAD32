@@ -70,15 +70,15 @@
 #define configUSE_TICK_HOOK				0	//call callback every tick 
 #define configCPU_CLOCK_HZ				( sysclk_get_cpu_hz() )
 #define configTICK_RATE_HZ				( ( portTickType ) 1000 )
-#define configMAX_PRIORITIES			( ( unsigned portBASE_TYPE ) 3 )
-#define configMINIMAL_STACK_SIZE		( ( unsigned short ) 200 )
-#define configTOTAL_HEAP_SIZE			( ( size_t ) ( 40960 ) )
-#define configMAX_TASK_NAME_LEN			( 10 )
+#define configMAX_PRIORITIES			( ( unsigned portBASE_TYPE ) 7 )
+#define configMINIMAL_STACK_SIZE		( ( unsigned short ) 500 )
+#define configTOTAL_HEAP_SIZE			( ( size_t ) ( 100000 ) )
+#define configMAX_TASK_NAME_LEN			( 12 )
 #define configUSE_TRACE_FACILITY		0
 #define configUSE_16_BIT_TICKS			0
 #define configIDLE_SHOULD_YIELD			1
 #define configUSE_MUTEXES				1
-#define configQUEUE_REGISTRY_SIZE		8	//Defines the maximum number of queues and semaphores that can be registered
+#define configQUEUE_REGISTRY_SIZE		10	//Defines the maximum number of queues and semaphores that can be registered
 #define configCHECK_FOR_STACK_OVERFLOW	1
 #define configUSE_RECURSIVE_MUTEXES		0
 #define configUSE_MALLOC_FAILED_HOOK	0	
@@ -88,12 +88,12 @@
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES 			0
-#define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
+#define configMAX_CO_ROUTINE_PRIORITIES ( 3 )
 
 /* Software timer definitions. */
 #define configUSE_TIMERS				1
 #define configTIMER_TASK_PRIORITY		( configMAX_PRIORITIES - 1 )
-#define configTIMER_QUEUE_LENGTH		2
+#define configTIMER_QUEUE_LENGTH		6
 #define configTIMER_TASK_STACK_DEPTH	( configMINIMAL_STACK_SIZE * 2 )
 
 /* Set the following definitions to 1 to include the API function, or zero

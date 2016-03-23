@@ -31,6 +31,7 @@
       <framework-data>
         <options>
           <option id="common.boards" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="common.services.basic.clock" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.services.delay" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.services.layer.freertos.twi" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.services.basic.gpio" value="Add" config="" content-id="Atmel.ASF" />
@@ -41,13 +42,14 @@
           <option id="common.utils.interrupt" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.utils.stdio.stdio_serial" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.drivers.pio" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="sam.drivers.pwm" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.drivers.spi" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.drivers.twi" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.drivers.uart" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.drivers.usart" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.drivers.wdt" value="Add" config="" content-id="Atmel.ASF" />
           <option id="thirdparty.os.freertos.version" value="Add" config="7.3.0" content-id="Atmel.ASF" />
-          <option id="common.services.basic.clock" value="Add" config="" content-id="Atmel.ASF" />
+          <option id="sam.drivers.tc" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.applications.user_application.xplained_pro" value="Add" config="" content-id="Atmel.ASF" />
           <option id="common.utils" value="Add" config="" content-id="Atmel.ASF" />
           <option id="sam.utils.cmsis.sam4s.source.template" value="Add" config="" content-id="Atmel.ASF" />
@@ -268,6 +270,10 @@
           <file path="src/ASF/common/utils/stdio/read.c" framework="" version="3.27.3" source="common\utils\stdio\read.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/common/utils/stdio/write.c" framework="" version="3.27.3" source="common\utils\stdio\write.c" changed="False" content-id="Atmel.ASF" />
           <file path="src/ASF/common/utils/stdio/stdio_serial/stdio_serial.h" framework="" version="3.27.3" source="common\utils\stdio\stdio_serial\stdio_serial.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam/drivers/pwm/pwm.c" framework="" version="3.27.3" source="sam\drivers\pwm\pwm.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam/drivers/pwm/pwm.h" framework="" version="3.27.3" source="sam\drivers\pwm\pwm.h" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam/drivers/tc/tc.c" framework="" version="3.27.3" source="sam\drivers\tc\tc.c" changed="False" content-id="Atmel.ASF" />
+          <file path="src/ASF/sam/drivers/tc/tc.h" framework="" version="3.27.3" source="sam\drivers\tc\tc.h" changed="False" content-id="Atmel.ASF" />
         </files>
         <documentation help="http://asf.atmel.com/docs/3.27.3/common.applications.user_application.xplained_pro.sam4s_xplained_pro/html/index.html" />
         <offline-documentation help="" />
@@ -285,7 +291,7 @@
     <com_atmel_avrdbg_tool_edbg>
       <ToolOptions>
         <InterfaceProperties>
-          <SwdClock>2000000</SwdClock>
+          <SwdClock>10000000</SwdClock>
         </InterfaceProperties>
         <InterfaceName>SWD</InterfaceName>
       </ToolOptions>
@@ -293,7 +299,61 @@
       <ToolNumber>ATML1803050200010751</ToolNumber>
       <ToolName>EDBG</ToolName>
     </com_atmel_avrdbg_tool_edbg>
-    <avrtoolinterfaceclock>2000000</avrtoolinterfaceclock>
+    <avrtoolinterfaceclock>10000000</avrtoolinterfaceclock>
+    <PercepioTrace>
+      <TargetOS />
+      <Frequency>120000000</Frequency>
+      <EnableTraceInterrupts>False</EnableTraceInterrupts>
+      <EnableNonintrusive>True</EnableNonintrusive>
+      <EnableTargetOS>False</EnableTargetOS>
+      <EnableApplicationOutput>False</EnableApplicationOutput>
+      <EnableDataWatchPoints>True</EnableDataWatchPoints>
+      <EnablePC>False</EnablePC>
+      <EnablePCPolled>False</EnablePCPolled>
+      <PolledFrequency>1000</PolledFrequency>
+      <EnableMcu>False</EnableMcu>
+      <EnableOsAwareness>True</EnableOsAwareness>
+      <HWApplicationOutput>True</HWApplicationOutput>
+      <HWInterrupt>True</HWInterrupt>
+      <HWIntrusiveDataWatch>True</HWIntrusiveDataWatch>
+      <HWNonintrusiveDataWatch>True</HWNonintrusiveDataWatch>
+      <HWPolledDataWatch>True</HWPolledDataWatch>
+      <HWPolledProgramCounterSampling>True</HWPolledProgramCounterSampling>
+      <HWProfiling>True</HWProfiling>
+      <HWProgramCounterSampling>True</HWProgramCounterSampling>
+      <ApplicationOutput0>String</ApplicationOutput0>
+      <ApplicationOutput1>String</ApplicationOutput1>
+      <ApplicationOutput2>String</ApplicationOutput2>
+      <ApplicationOutput3>String</ApplicationOutput3>
+      <ApplicationOutput4>String</ApplicationOutput4>
+      <ApplicationOutput5>String</ApplicationOutput5>
+      <ApplicationOutput6>String</ApplicationOutput6>
+      <ApplicationOutput7>String</ApplicationOutput7>
+      <ApplicationOutput8>String</ApplicationOutput8>
+      <ApplicationOutput9>String</ApplicationOutput9>
+      <ApplicationOutput10>String</ApplicationOutput10>
+      <ApplicationOutput11>String</ApplicationOutput11>
+      <ApplicationOutput12>String</ApplicationOutput12>
+      <ApplicationOutput13>String</ApplicationOutput13>
+      <ApplicationOutput14>String</ApplicationOutput14>
+      <ApplicationOutput15>String</ApplicationOutput15>
+      <ApplicationOutput16>String</ApplicationOutput16>
+      <ApplicationOutput17>String</ApplicationOutput17>
+      <ApplicationOutput18>String</ApplicationOutput18>
+      <ApplicationOutput19>String</ApplicationOutput19>
+      <ApplicationOutput20>String</ApplicationOutput20>
+      <ApplicationOutput21>String</ApplicationOutput21>
+      <ApplicationOutput22>String</ApplicationOutput22>
+      <ApplicationOutput23>String</ApplicationOutput23>
+      <ApplicationOutput24>String</ApplicationOutput24>
+      <ApplicationOutput25>String</ApplicationOutput25>
+      <ApplicationOutput26>String</ApplicationOutput26>
+      <ApplicationOutput27>String</ApplicationOutput27>
+      <ApplicationOutput28>String</ApplicationOutput28>
+      <ApplicationOutput29>String</ApplicationOutput29>
+      <ApplicationOutput30>String</ApplicationOutput30>
+      <ApplicationOutput31>String</ApplicationOutput31>
+    </PercepioTrace>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -351,6 +411,8 @@
       <Value>../src/ASF/common/services/serial</Value>
       <Value>../src/ASF/sam/drivers/usart</Value>
       <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
+      <Value>../src/ASF/sam/drivers/pwm</Value>
+      <Value>../src/ASF/sam/drivers/tc</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize for size (-Os)</armgcc.compiler.optimization.level>
@@ -409,6 +471,8 @@
       <Value>../src/ASF/common/services/serial</Value>
       <Value>../src/ASF/sam/drivers/usart</Value>
       <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
+      <Value>../src/ASF/sam/drivers/pwm</Value>
+      <Value>../src/ASF/sam/drivers/tc</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
 </ArmGcc>
@@ -485,6 +549,9 @@
       <Value>../src/Percipio</Value>
       <Value>../src/Percipio/Config_template</Value>
       <Value>../src/Percipio/include_percp</Value>
+      <Value>../src/ASF/sam/drivers/pwm</Value>
+      <Value>../src/Motor_control</Value>
+      <Value>../src/ASF/sam/drivers/tc</Value>
     </ListValues>
   </armgcc.compiler.directories.IncludePaths>
   <armgcc.compiler.optimization.level>Optimize (-O1)</armgcc.compiler.optimization.level>
@@ -546,6 +613,8 @@
       <Value>../src/ASF/common/services/serial</Value>
       <Value>../src/ASF/sam/drivers/usart</Value>
       <Value>../src/ASF/common/utils/stdio/stdio_serial</Value>
+      <Value>../src/ASF/sam/drivers/pwm</Value>
+      <Value>../src/ASF/sam/drivers/tc</Value>
     </ListValues>
   </armgcc.preprocessingassembler.general.IncludePaths>
   <armgcc.preprocessingassembler.debugging.DebugLevel>Default (-Wa,-g)</armgcc.preprocessingassembler.debugging.DebugLevel>
@@ -586,7 +655,9 @@
     <Folder Include="src\ASF\sam\drivers\pdc\pdc_uart_example\" />
     <Folder Include="src\ASF\sam\drivers\pio\" />
     <Folder Include="src\ASF\sam\drivers\pmc\" />
+    <Folder Include="src\ASF\sam\drivers\pwm\" />
     <Folder Include="src\ASF\sam\drivers\spi\" />
+    <Folder Include="src\ASF\sam\drivers\tc\" />
     <Folder Include="src\ASF\sam\drivers\twi\" />
     <Folder Include="src\ASF\sam\drivers\uart\" />
     <Folder Include="src\ASF\sam\drivers\usart\" />
@@ -625,6 +696,7 @@
     <Folder Include="src\ASF\thirdparty\freertos\freertos-7.3.0\source\portable\memmang\" />
     <Folder Include="src\config\" />
     <Folder Include="src\IMU" />
+    <Folder Include="src\Motor_control" />
     <Folder Include="src\Rf" />
     <Folder Include="src\Rf\SX1276_V" />
     <Folder Include="src\Senzors" />
@@ -663,9 +735,21 @@
     <Compile Include="src\ASF\common\utils\stdio\write.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\ASF\sam\drivers\pwm\pwm.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <None Include="src\ASF\sam\drivers\pwm\pwm.h">
+      <SubType>compile</SubType>
+    </None>
     <Compile Include="src\ASF\sam\drivers\spi\spi.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="src\ASF\sam\drivers\tc\tc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <None Include="src\ASF\sam\drivers\tc\tc.h">
+      <SubType>compile</SubType>
+    </None>
     <Compile Include="src\ASF\sam\drivers\twi\twi.c">
       <SubType>compile</SubType>
     </Compile>
@@ -700,6 +784,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\main.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Motor_control\Motor.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="src\Motor_control\Motor.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="src\Rf\RF_Task.c">

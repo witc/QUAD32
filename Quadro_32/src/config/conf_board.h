@@ -51,8 +51,8 @@
 #  define SX1276_SCK_PIN         PIO_PA14_IDX // OUT
 #  define SX1276_MOSI_PIN        PIO_PA13_IDX // OUT
 #  define SX1276_MISO_PIN	     PIO_PA12_IDX // OUT
-#  define SX1276_RESET_PIN       PIO_PA23_IDX // OUT
-#  define SX1276_RxTx_PIN        PIO_PA19_IDX // OUT
+#  define SX1276_RESET_PIN       PIO_PA24_IDX // OUT
+#  define SX1276_RxTx_PIN        PIO_PA6_IDX // OUT
 #  define SX1276_NIRQ0_PIN       PIO_PA18_IDX // IN
 #  define SX1276_NIRQ1_PIN       PIO_PA17_IDX // IN
 
@@ -61,11 +61,26 @@
 #define I2C_SDA_PIN				PIO_PA3_IDX
 #define EXT1_TWI_SDA_MUX		1
 #define EXT1_TWI_SCL_MUX        1
+#define MPU9150_PIN_INT			PIO_PB0_IDX
+
 
 //Measure Periode
-#define PERIODE_PIN				PIO_PA17_IDX
-#define PERIODE_PIN_INT			PIO_PA21_IDX
+#define PERIODE_PIN				PIO_PA21_IDX
+#define PERIODE_PIN_INT			PIO_PC27_IDX
 
-#define USART_TXD_PIN            IOPORT_CREATE_PIN(PIOB, 3)
+/* PWM motors*/
+#define PWM_M1					PIO_PA23_IDX //PER_B	PWM_H0
+#define PWM_M2					PIO_PA1_IDX  //PER_A		PWM_H1
+#define PWM_M3					PIO_PA25_IDX //PER_B	PWM_H2
+#define PWM_M4					PIO_PC21_IDX //PER_B	PWM_H3
+
+
+/* LED */
+#define LEDW					PIO_PB1_IDX
+#define LEDR					PIO_PA10_IDX
+//#define LEDG					PIO_PB2_IDX
+
+
+#define USART_TXD_PIN           IOPORT_CREATE_PIN(PIOB, 3)
 
 #endif /* CONF_BOARD_H */

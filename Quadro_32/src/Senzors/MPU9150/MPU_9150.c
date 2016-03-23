@@ -493,6 +493,12 @@ void MPU9150_getMotion6(short* ax, short* ay, short* az, short* gx, short* gy, s
     *gz = ((((short)buffer[12]) << 8) | buffer[13])-offset[2];
 }
 
+void MPU9150_getMotion3(uint8_t *buffer)
+{
+	
+	MPU6050_I2C_BufferRead(MPU6050_DEFAULT_ADDRESS,buffer,MPU6050_RA_GYRO_XOUT_H, 6);
+	
+}
 /* not fifo, but clear data */
 void MPU9150_getMotion66(uint8_t *buffer,short *offset)
 {
@@ -607,20 +613,20 @@ void MPU9150_Gyro_Tempr_Bias_no_fifo(short *offset)
 {	
 	static short Temp;
 	uint8_t p_buffer[6];
-	long Sum[4]={0,0,0,0};	//32 bits
-	#define NO_OF_SAMPLES 800
+	long long Sum[4]={0,0,0,0};	//32 bits
+	#define NO_OF_SAMPLES 8000
 	
-	 delay_ms(100);
+	 delay_ms(1000);
 	for (short i=0;i<NO_OF_SAMPLES;i++)
 	{
-		MPU9150_getMotion66(p_buffer,NULL)	;
+		MPU9150_getMotion3(p_buffer);
 		Temp=(short)((p_buffer[0] << 8) | p_buffer[1]);
 		Sum[0]+=Temp;
 		Temp=(short)((p_buffer[2] << 8) | p_buffer[3]);
 		Sum[1]+=Temp;
 		Temp=(short)((p_buffer[4] << 8) | p_buffer[5]);
 		Sum[2]+=Temp;
-		delay_ms(2);
+		//delay_ms(10);
 	}
 	
 	 offset[0]=(short)(Sum[0]/NO_OF_SAMPLES);

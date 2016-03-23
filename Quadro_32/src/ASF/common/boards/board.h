@@ -74,7 +74,7 @@ extern "C" {
 #define USART_SERIAL_STOP_BIT            false
 
 
-#define LEDG					PIO_PB1_IDX
+
 
 
 /*! \name Base Boards

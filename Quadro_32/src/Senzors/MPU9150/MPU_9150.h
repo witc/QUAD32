@@ -475,6 +475,7 @@ void MPU9150_getMotion9(int16_t* ax, int16_t* ay, int16_t* az, int16_t* gx, int1
 short MPU9150_getMotion6_fifo(uint8_t* FIFO_MPU);
 void MPU9150_getMotion6(short* ax, short* ay, short* az, short* gx, short* gy, short* gz,short *offset);
 void MPU9150_getMotion66(uint8_t *buffer,short *offset);
+void MPU9150_getMotion3(uint8_t *buffer);
 
 void MPU9150_Gyro_Tempr_Bias(short *offset);
 void MPU9150_Gyro_Tempr_Bias_no_fifo(short *offset);

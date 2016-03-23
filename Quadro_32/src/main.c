@@ -5,6 +5,7 @@
 #include "main.h"
 #include "RF_Task.h"
 #include "Senzor_Task.h"
+#include "Motor.h"
 #include "Extern_init.h"
 #include "string.h"
 
@@ -14,9 +15,11 @@ void System_TimerCallback(xTimerHandle pxTimer);
 
 xTaskHandle		Sx1276_id;
 xTaskHandle		Senzor_id;
+xTaskHandle		Motor_id;
 
 volatile	xQueueHandle		Queue_RF_Task;
 volatile	xQueueHandle		Queue_Senzor_Task;
+volatile	xQueueHandle		Queue_Motor_Task;
 
 volatile xTimerHandle MPU_Timer;
 volatile xTimerHandle System_Timer;
@@ -32,33 +35,32 @@ void Semtech_IRQ0(void)
 	NVIC_ClearPendingIRQ(PIOA_IRQn);
 	
 	Semtech.Stat.Cmd=STAY_IN_STATE;
-	Semtech.Stat.Data_State=6;//Check_status(0);
+	Semtech.Stat.Data_State=Check_status(0);
 	//xTaskResumeFromISR(Sx1276_id);
- 	while(xQueueSendToBackFromISR(Queue_RF_Task,&Semtech,&xHigherPriorityTaskWoken)!=pdTRUE);	//lepší používat Back..
- 	
+ 	//while(xQueueSendToBackFromISR(Queue_RF_Task,&Semtech,&xHigherPriorityTaskWoken)!=pdTRUE);	//lepší používat Back..
+ 	xQueueSendToBackFromISR(Queue_RF_Task,&Semtech,&xHigherPriorityTaskWoken);
    if (xHigherPriorityTaskWoken==pdTRUE) portYIELD();
    
 	
 }
 
 /*NIRQ1 - From RF Semtech - Timeout*/
-// void Semtech_IRQ1(void)
-// {
-// 	RF_Queue	Semtech;
-// 	
-// 	NVIC_ClearPendingIRQ(PIOA_IRQn);
-// 
-// 	Semtech.Stat.Cmd=STAY_IN_STATE;
-// 	Semtech.Stat.Data_State=Check_status(1);
-// 	
-// 	if(xQueueSendFromISR(Queue_RF_Task,&Semtech,3000)!=pdPASS);
-// 	{
-// 		__ASM volatile("BKPT #01");
-// 		
-// 	}
-// 	
-// 	
-// }
+void Semtech_IRQ1(void)
+{
+	RF_Queue	Semtech;
+	signed portBASE_TYPE xHigherPriorityTaskWoken;
+	xHigherPriorityTaskWoken=pdTRUE;	//pøerušení se dokonèí celé= pdFalse
+	
+	NVIC_ClearPendingIRQ(PIOA_IRQn);
+	Semtech.Stat.Cmd=STAY_IN_STATE;
+	Semtech.Stat.Data_State=Check_status(1);
+	
+	xQueueSendToBackFromISR(Queue_RF_Task,&Semtech,&xHigherPriorityTaskWoken);
+	if (xHigherPriorityTaskWoken==pdTRUE) portYIELD();
+	
+	
+}
+
 // 
 // /*NIRQ1 - From RF Semtech - CR error*/
 // void Semtech_IRQ2(void)
@@ -125,13 +127,6 @@ int main (void)
 	
 	/* Configure UART for debug message output. */
 	//configure_console();
-
-	/* Output example information. */
-	//puts(STRING_HEADER);
-
-	/* Configure USART. */
-	configure_console();
-
 		
 //  	static usart_serial_options_t usart_options = {
 //  		.baudrate = USART_SERIAL_BAUDRATE,
@@ -148,27 +143,35 @@ int main (void)
 	//uiTraceStart();
 	
 	Queue_RF_Task=xQueueCreate(6,sizeof(RF_Queue));
+	Queue_Motor_Task=xQueueCreate(5,sizeof(Motor_Queue));
+	
 	
 #if (RAW_MPU9150==1)
 
 #elif ((RAW_INT_MPU9150==1))
+
 	Queue_Senzor_Task=xQueueCreate(8,sizeof(MPU9150_Queue));	
+	
 #elif (FIFO_MPU9150==1)
+
 	Queue_Senzor_Task=xQueueCreate(2,sizeof(MPU9150_Queue));
 	MPU_Timer=xTimerCreate("Timer_MPU",(20/portTICK_RATE_MS),pdTRUE,0,MPU_TimerCallback);
+	
 #else
-# error "Please specifyWay to get a datta from MPU9150"
+	# error "Please specifyWay to get a datta from MPU9150"
 #endif
 	
 	
-	System_Timer=xTimerCreate("Timer_MPU",(20/portTICK_RATE_MS),pdTRUE,0,System_TimerCallback);
-	if(xTimerStart(System_Timer,0)!=pdPASS){}
-		
+ 	System_Timer=xTimerCreate("Timer_System",(250/portTICK_RATE_MS),pdTRUE,0,System_TimerCallback);
+ 	if(xTimerStart(System_Timer,0)!=pdPASS){}
+	
+	
 	/*Create Compass Task*/
-	xTaskCreate(Senzor_Task,(const signed char * const) "Senzor",configMINIMAL_STACK_SIZE+400,NULL, 1,&Senzor_id);	
+	xTaskCreate(Senzor_Task,(const signed char * const) "Senzor",configMINIMAL_STACK_SIZE+350,NULL, 1,&Senzor_id);	
 	/*Create Semtech Task*/
-	xTaskCreate(RF_Task,(const signed char * const) "Sx1276",configMINIMAL_STACK_SIZE+400,NULL, 1,&Sx1276_id);
-		
+	xTaskCreate(RF_Task,(const signed char * const) "Sx1276",configMINIMAL_STACK_SIZE+350,NULL, 1,&Sx1276_id);
+	/*Create Motor Task*/
+	xTaskCreate(Motor_Task,(const signed char * const) "Motor",configMINIMAL_STACK_SIZE+300,NULL, 1,&Motor_id);		
 	
 	vTaskStartScheduler();
 		
@@ -179,18 +182,18 @@ int main (void)
 
 void System_TimerCallback(xTimerHandle pxTimer)
 {	
-	static uint8_t temp=0;
-	
-	temp++;
-	if (temp>10)
-	{
-		ioport_set_pin_level(LEDG,true);
-		temp=0;
-	}else
-	{
-		ioport_set_pin_level(LEDG,false);
-		
-	}
+ 	static uint8_t temp=0;
+ 	
+//  	temp++;
+//  	if (temp>12)
+//  	{
+		ioport_toggle_pin_level(LEDW);
+// 		temp=0;
+ //	}else
+ 	//{
+ 		//ioport_set_pin_level(LEDW,false);
+ 		
+ 	//}
 }
 
 
@@ -219,7 +222,8 @@ void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
 // 		pole[i]=pcTaskName[i];
 // 	}
 	
-	   	
+	ioport_set_pin_level(LEDR,true);
+		   	
 	__ASM volatile("BKPT #01");	
     /* Run time stack overflow checking is performed if
     configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2.  This hook
@@ -240,7 +244,8 @@ void vApplicationStackOverflowHook(xTaskHandle pxTask, signed char *pcTaskName)
 //  	
 //  	sprintf(zprava2, "SCB->CFSR = 0x%08x\n", SCB->CFSR );
  	
- 
+		ioport_set_pin_level(LEDR,true);
+		
  //}	
  __ASM volatile("BKPT #01");
  	while(1);

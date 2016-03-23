@@ -29,14 +29,15 @@
 extern	volatile	xQueueHandle		Queue_RF_Task;
 extern volatile		xSemaphoreHandle	Lights_RF_Busy;
 extern xTaskHandle		Sx1276_id;
- 
+extern volatile	xQueueHandle		Queue_Motor_Task;
+
 
 uint8_t pole[]={1,2,3,4,5,6};
 
 // Default settings
 extern tLoRaSettings LoRaSettings;
 extern tSX1276LR SX1276LR;
-
+Motor_Queue Position;
 
 /****************************************************************************/
 void RX_done_LR(RF_Queue *Semtech,short *crc)
@@ -45,15 +46,18 @@ void RX_done_LR(RF_Queue *Semtech,short *crc)
 	static double RxPacketRssiValue;
 	static uint8_t RFBuffer[RF_BUFFER_SIZE];
 	
-	SX1276LoRaSetOpMode( RFLR_OPMODE_STANDBY );
-		
+	
+	
+	SX1276LoRaSetOpMode(RFLR_OPMODE_STANDBY);
+	
+	//SX1276Write( REG_LR_IRQFLAGS, RFLR_IRQFLAGS_RXDONE  );
 	SX1276Read( REG_LR_IRQFLAGS, &SX1276LR.RegIrqFlags );
 	
 	if( ( SX1276LR.RegIrqFlags & RFLR_IRQFLAGS_PAYLOADCRCERROR ) == RFLR_IRQFLAGS_PAYLOADCRCERROR )
 	{
 		// Clear Irq
-		 SX1276Write( REG_LR_IRQFLAGS,RFLR_IRQFLAGS_PAYLOADCRCERROR_MASK  );
-		gpio_set_pin_high(LED0);
+		 SX1276Write( REG_LR_IRQFLAGS,SX1276LR.RegIrqFlags  );
+		//gpio_set_pin_high(LED0);
 		//Semtech->State = RFLR_STATE_RX_INIT;
 		*crc=CRC_FALSE;
 		//Semtech->Rssi=SX1276LoRaReadRssi();
@@ -62,21 +66,22 @@ void RX_done_LR(RF_Queue *Semtech,short *crc)
 	else if ((SX1276LR.RegIrqFlags & RFLR_IRQFLAGS_RXDONE ) == RFLR_IRQFLAGS_RXDONE)
 	{
 		*crc=CRC_OK;
-		SX1276Write( REG_LR_IRQFLAGS,RFLR_IRQFLAGS_RXDONE_MASK );
-		gpio_toggle_pin(LED0);
-				
+		SX1276Write( REG_LR_IRQFLAGS,SX1276LR.RegIrqFlags ); //RFLR_IRQFLAGS_RXDONE_MASK
+		//ioport_toggle_pin(LED_OK);
+		ioport_toggle_pin_level(LEDR);
+		
 		RxPacketRssiValue=SX1276LoRaReadRssi();
 		
 		if( LoRaSettings.RxSingleOn == true ) // Rx single mode
-		{	
-		
+		{
+			
 			SX1276LR.RegFifoAddrPtr =SX1276LR.RegFifoRxBaseAddr;;
 			SX1276Write( REG_LR_FIFOADDRPTR, SX1276LR.RegFifoAddrPtr );
 
 			if( LoRaSettings.ImplicitHeaderOn == true )
-			{	
+			{
 				RxPacketSize = SX1276LR.RegPayloadLength;
-				SX1276ReadFifo( RFBuffer,RxPacketSize); //SX1276LR->RegPayloadLength 
+				SX1276ReadFifo( RFBuffer,RxPacketSize); //SX1276LR->RegPayloadLength
 			}
 			else
 			{
@@ -86,7 +91,7 @@ void RX_done_LR(RF_Queue *Semtech,short *crc)
 			}
 		}
 		else // Rx continuous mode
-		{	
+		{
 			SX1276Read( REG_LR_FIFORXCURRENTADDR, &SX1276LR.RegFifoRxCurrentAddr );
 
 			if( LoRaSettings.ImplicitHeaderOn == true )
@@ -98,6 +103,7 @@ void RX_done_LR(RF_Queue *Semtech,short *crc)
 			}
 			else
 			{
+				
 				SX1276Read( REG_LR_NBRXBYTES, &SX1276LR.RegNbRxBytes );
 				RxPacketSize = SX1276LR.RegNbRxBytes;
 				SX1276LR.RegFifoAddrPtr = SX1276LR.RegFifoRxCurrentAddr - SX1276LR.RegNbRxBytes;
@@ -105,13 +111,29 @@ void RX_done_LR(RF_Queue *Semtech,short *crc)
 				SX1276ReadFifo( RFBuffer, SX1276LR.RegNbRxBytes );
 			}
 		}
-	
-	
-		RFBuffer[RxPacketSize+1]=0;
-		
-		Semtech->Rssi=RxPacketRssiValue;
 		
 	
+		
+		
+		Position.TX_CH_xx[0]=RFBuffer[0];
+		Position.TX_CH_xx[0]|=(RFBuffer[1]<<8);
+		
+		Position.TX_CH_xx[1]=RFBuffer[2];
+		Position.TX_CH_xx[1]|=(RFBuffer[3]<<8);
+		
+		Position.TX_CH_xx[2]=RFBuffer[4];
+		Position.TX_CH_xx[2]|=(RFBuffer[5]<<8);
+		
+		Position.TX_CH_xx[3]=RFBuffer[6];
+		Position.TX_CH_xx[3]|=(RFBuffer[7]<<8);
+		
+		/* Send new TX data to motor task */
+		Position.type_of_data=FROM_TX;
+		if(xQueueSend(Queue_Motor_Task,&Position,1))	//pdPASS=1-
+		{
+			
+		}
+ 	
 	//Clear all irqs in SEMTECH
 	}else
 	{
@@ -121,21 +143,7 @@ void RX_done_LR(RF_Queue *Semtech,short *crc)
 	//	SX1276ReadFifo( RFBuffer,RxPacketSize); //SX1276LR->RegPayloadLength 
 			
 	}
-	
-// 	SX1276Read(0xC,&Semtech->AGC);
-// 	Semtech->AGC>>=5;
-// 		
-// 	for (char i=0;i<100;i++)
-// 	{
-// 		Semtech->Buffer[i]=(char)RFBuffer[i];
-// 	}
-	
-	Semtech->Stat.Data_State=RFLR_STATE_RX_INIT;
-	Semtech->Stat.Cmd=STAY_IN_STATE;
-	if(xQueueSend(Queue_RF_Task,&Semtech,5000)!=pdPASS)
-	{
 		
-	}
 	
 //	NVIC_EnableIRQ(GPS_IRQ);
 	
@@ -145,17 +153,11 @@ void RX_done_LR(RF_Queue *Semtech,short *crc)
 
 void Start_RX_LR(void)
 {	
-	//RF_Queue Semtech;
+	SX1276LoRaSetOpMode( RFLR_OPMODE_STANDBY );
+		 SX1276Write( REG_LR_IRQFLAGS,0xFF  );
 	
-	//static uint8_t RFBuffer[RF_BUFFER_SIZE];
-	//RF_STAT Semtech;
-	
-	/* Clear all Flags IRQ */
-	SX1276Write( REG_LR_IRQFLAGS, 0xFF );
-
-
-	SX1276LR.RegIrqFlagsMask = 	
-	RFLR_IRQFLAGS_RXTIMEOUT |
+	SX1276LR.RegIrqFlagsMask =
+	//RFLR_IRQFLAGS_RXTIMEOUT |
 	//RFLR_IRQFLAGS_RXDONE|
 	//RFLR_IRQFLAGS_PAYLOADCRCERROR |
 	RFLR_IRQFLAGS_VALIDHEADER |
@@ -163,39 +165,36 @@ void Start_RX_LR(void)
 	RFLR_IRQFLAGS_CADDONE |
 	RFLR_IRQFLAGS_FHSSCHANGEDCHANNEL |
 	RFLR_IRQFLAGS_CADDETECTED;
-	 
+	
 	SX1276Write( REG_LR_IRQFLAGSMASK, SX1276LR.RegIrqFlagsMask );
 
 	SX1276LR.RegHopPeriod = 0;	//Datasheet says 0 ... nebo stara verze 255?
 	SX1276Write( REG_LR_HOPPERIOD, SX1276LR.RegHopPeriod );
-	 								// RxDone                    RxTimeout                   FhssChangeChannel           CadDone
-	SX1276LR.RegDioMapping1 = RFLR_DIOMAPPING1_DIO0_00;// | 
-								//RFLR_DIOMAPPING1_DIO1_00;// | 	//RXTimeout
-								// RFLR_DIOMAPPING1_DIO2_00 | 
-								// RFLR_DIOMAPPING1_DIO3_10; //CRC error
-								// CadDetected               ModeReady
+	// RxDone                    RxTimeout                   FhssChangeChannel           CadDone
+	SX1276LR.RegDioMapping1 = RFLR_DIOMAPPING1_DIO0_00;// |
+	RFLR_DIOMAPPING1_DIO1_00;// | 	//RXTimeout
+	// RFLR_DIOMAPPING1_DIO2_00 |
+	// RFLR_DIOMAPPING1_DIO3_10; //CRC error
+	// CadDetected               ModeReady
 	SX1276LR.RegDioMapping2 =0;// RFLR_DIOMAPPING2_DIO4_00 | RFLR_DIOMAPPING2_DIO5_00;
 	SX1276WriteBuffer( REG_LR_DIOMAPPING1, &SX1276LR.RegDioMapping1, 2 );
 
-// 	 // see errata note
- 	//SX1276Write( 0x2F, 0x14 );
-	SX1276LoRaSetPayloadLength( LoRaSettings.PayloadLength,&SX1276LR );	//
-	 
-	 if( LoRaSettings.RxSingleOn == true ) // Rx single mode
-	 {
-		 SX1276LoRaSetOpMode( RFLR_OPMODE_RECEIVER_SINGLE );
-	 }
-	 else // Rx continuous mode
-	 {
-		 SX1276LR.RegFifoAddrPtr = SX1276LR.RegFifoRxBaseAddr;
-		 SX1276Write( REG_LR_FIFOADDRPTR, SX1276LR.RegFifoAddrPtr );
-		 
-		 SX1276LoRaSetOpMode( RFLR_OPMODE_RECEIVER );
-	 }
-	 
+	// 	 // see errata note
+	//SX1276Write( 0x2F, 0x14 );
+	//SX1276LoRaSetPayloadLength( LoRaSettings.PayloadLength,&SX1276LR );	//
 	
-// 	 PacketTimeout = LoRaSettings.RxPacketTimeout;
-// 	 RxTimeoutTimer = TickCounter;//GET_TICK_COUNT( );
+	if( LoRaSettings.RxSingleOn == true ) // Rx single mode
+	{
+		SX1276LoRaSetOpMode( RFLR_OPMODE_RECEIVER_SINGLE );
+	}
+	else // Rx continuous mode
+	{
+		SX1276LR.RegFifoAddrPtr = SX1276LR.RegFifoRxBaseAddr;
+		SX1276Write( REG_LR_FIFOADDRPTR, SX1276LR.RegFifoAddrPtr );
+		
+		SX1276LoRaSetOpMode( RFLR_OPMODE_RECEIVER );
+	}
+	
 	
 		
 }
@@ -265,11 +264,17 @@ uint8_t Check_status(char Line)
 		if (Line==0)
 		{
 			//SX1276Write( 0x12, RFLR_IRQFLAGS_RXDONE_MASK);
+#if (RX_NEW_CMD==1)
+			return	RFLR_STATE_RX_DONE;
+#elif (TX_TO_MATLAB==1)			
 			return	RFLR_STATE_TX_DONE;
+#else
+# error "TX or RX?"
+#endif
 			 
 		}else if(Line==1)
 		{
-			 SX1276Write( 0x12, RFLR_IRQFLAGS_RXTIMEOUT_MASK);//
+			// SX1276Write( 0x12, RFLR_IRQFLAGS_RXTIMEOUT_MASK);//
 			 return	RFLR_STATE_RX_TIMEOUT;
 			 
 		}else if(Line==2)
@@ -327,25 +332,26 @@ void Rf_mode(RF_Queue *Sem_in)
 					RX_done_FSK(&Semtech,&Valid_packet);
 			#endif
 			
-			if (Valid_packet==CRC_OK)
-			{
-											
-			}
-		
 			Semtech.Stat.Data_State=RFLR_STATE_RX_INIT;
 			Semtech.Stat.Cmd=STAY_IN_STATE;
-			if(xQueueSend(Queue_RF_Task,&Semtech,10000)!=pdPASS)
+			if(xQueueSend(Queue_RF_Task,&Semtech,portMAX_DELAY)!=pdPASS)
 			{
-				
+		
 			}
+		
+			
 		
 			break;
 		
 		case RFLR_STATE_RX_TIMEOUT:
-		
+			
+			SX1276LoRaSetOpMode(RFLR_OPMODE_STANDBY);
+			SX1276Write( REG_LR_IRQFLAGS, 0xFF );
 			Semtech.Stat.Cmd=STAY_IN_STATE;
 			Semtech.Stat.Data_State=RFLR_STATE_RX_INIT;
-			if(xQueueSend(Queue_RF_Task,&Semtech,10000)!=pdPASS)
+			ioport_toggle_pin_level(LEDR);
+	
+			if(xQueueSend(Queue_RF_Task,&Semtech,portMAX_DELAY)!=pdPASS)
 			{
 				
 			}
@@ -424,9 +430,16 @@ void RF_Task(void *pvParameters)
 	RF_Queue Semtech;
 	//MANAGER_TASK Manage_data;
 	
-//  	Semtech.Stat.Data_State=RFLR_STATE_RX_INIT;
-//  	Semtech.Stat.Cmd=STAY_IN_STATE;
-//  	xQueueSend(Queue_RF_Task,&Semtech,portMAX_DELAY);
+#if (RX_NEW_CMD==1)
+	Semtech.Stat.Data_State=RFLR_STATE_RX_INIT;
+	Semtech.Stat.Cmd=STAY_IN_STATE;
+	xQueueSend(Queue_RF_Task,&Semtech,portMAX_DELAY);
+#elif (TX_TO_MATLAB==1)
+
+#else
+# error "TX or RX?"
+#endif
+ 	
  	
 // 	portTickType LastWakeTime;
 // 	LastWakeTime=xTaskGetTickCount();
@@ -440,6 +453,8 @@ void RF_Task(void *pvParameters)
 // 	vSemaphoreCreateBinary(Lights_RF_Busy);
 // 	xSemaphoreTake(Lights_RF_Busy,0);
 	cpu_irq_enable();
+	
+
 	
 	for (;;)
 	{	

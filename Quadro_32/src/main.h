@@ -13,9 +13,14 @@
 #define BOARD_USART                UART1
 #define BOARD_USART_BAUDRATE       19200
 
+/* define mode of mpu */
 #define FIFO_MPU9150		0
 #define RAW_MPU9150			0
 #define RAW_INT_MPU9150		1
+
+/* define TX or RX */
+#define	TX_TO_MATLAB		1
+#define	RX_NEW_CMD			0
 
 
 //LoRa
@@ -120,6 +125,25 @@ typedef struct{
 	//float Temp;
 }RF_Queue;
 
+typedef enum{
+	NONE,
+	FROM_TX,
+	FROM_SENZOR,
+}cmd_types;
+	
+//Motor
+typedef struct{
+	
+	float pitch;
+	float roll;
+	float yaw;
+	
+	uint16_t TX_CH_xx[4];
+	uint8_t type_of_data;
+	
+	//float Temp;
+}Motor_Queue;
+
 /* MPU9150*/
 typedef struct{
 
@@ -128,6 +152,7 @@ typedef struct{
 #elif ((RAW_INT_MPU9150==1))
 
 	uint8_t MPU_FIFO[14];
+	uint8_t Vycti_data;
 	
 #elif (FIFO_MPU9150==1)
 
@@ -138,8 +163,19 @@ typedef struct{
 #endif	
 	
 	short temp;
+	
 
 }MPU9150_Queue;
+
+#if ((RAW_INT_MPU9150==1))
+
+typedef struct{
+	
+	uint8_t MPU_FIFO[14];
+	
+}MPU9150_Buffer;
+	
+#endif
 
 /************************************************************************/
 //LCD

@@ -14,7 +14,11 @@ src\ASF\common\utils\stdio\read.c
 
 src\ASF\common\utils\stdio\write.c
 
+src\ASF\sam\drivers\pwm\pwm.c
+
 src\ASF\sam\drivers\spi\spi.c
+
+src\ASF\sam\drivers\tc\tc.c
 
 src\ASF\sam\drivers\twi\twi.c
 
@@ -27,6 +31,8 @@ src\ASF\thirdparty\freertos\freertos-7.3.0\source\FreeRTOS_CLI.c
 src\Extern_init.c
 
 src\IMU\MadgwickAHRS.c
+
+src\Motor_control\Motor.c
 
 src\Rf\RF_Task.c
 

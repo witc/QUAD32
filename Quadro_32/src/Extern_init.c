@@ -14,7 +14,7 @@
 
 
 
-#define TWI_SPEED				400000//100KHZ default
+#define TWI_SPEED				390000//400 khz max
 
 
 /********/
@@ -40,18 +40,19 @@ void twi_init(void)
  void eic_setup(void)	//external inerrupt
  {	
 	 
-	pmc_enable_periph_clk(ID_PIOA);
+	//pmc_enable_periph_clk(ID_PIOA);
 	
-	//pio_set_input(PIOA, PIO_PA17, PIO_PULLUP);
+	pio_set_input(PIOA, PIO_PA17, PIO_PULLUP);
 	pio_set_input(PIOA, PIO_PA18, PIO_PULLUP);
 	//pio_set_input(PIOA, PIO_PA24, PIO_PULLUP);
 	
 	pio_handler_set(PIOA, ID_PIOA, PIO_PA18, PIO_IT_RISE_EDGE, Semtech_IRQ0);
-	//pio_handler_set(PIOA, ID_PIOA, PIO_PA17, PIO_IT_RISE_EDGE, Semtech_IRQ1);
+	pio_handler_set(PIOA, ID_PIOA, PIO_PA17, PIO_IT_RISE_EDGE, Semtech_IRQ1);
 	//pio_handler_set(PIOA, ID_PIOA, PIO_PA24, PIO_IT_RISE_EDGE, Semtech_IRQ2);
 	
-	//pio_enable_interrupt(PIOA, PIO_PA17);
 	pio_enable_interrupt(PIOA, PIO_PA18);
+	pio_enable_interrupt(PIOA, PIO_PA17);
+	
 	//pio_enable_interrupt(PIOA, PIO_PA24);
 	
 	NVIC_EnableIRQ(PIOA_IRQn);

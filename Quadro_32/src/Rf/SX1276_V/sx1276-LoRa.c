@@ -71,7 +71,7 @@ const double RssiOffset[] =
 tLoRaSettings LoRaSettings =
 {
 	869525000,        // RFFrequency
-	-10,               // Power
+	0,               // Power
 	9,                // SignalBw [0: 7.8kHz, 1: 10.4 kHz, 2: 15.6 kHz, 3: 20.8 kHz, 4: 31.2 kHz,
 	// 5: 41.6 kHz, 6: 62.5 kHz, 7: 125 kHz, 8: 250 kHz, 9: 500 kHz, other: Reserved]
 	//pro mensi nez 62,5 je dulezite pouzit TCXO as f reference
@@ -83,8 +83,8 @@ tLoRaSettings LoRaSettings =
 	0,                // FreqHopOn [0: OFF, 1: ON]
 	4,                // HopPeriod Hops every frequency hopping period symbols
 	200,              // TxPacketTimeout
-	1500,              // RxPacketTimeout
-	6,              // PayloadLength (used for implicit header mode)
+	700,              // RxPacketTimeout
+	8,              // PayloadLength (used for implicit header mode)
 };
 
 
@@ -107,7 +107,7 @@ void SX1276LoRaInit( void )
     SX1276LoRaSetSignalBandwidth( LoRaSettings.SignalBw,&SX1276LR );
     
     SX1276LoRaSetImplicitHeaderOn( LoRaSettings.ImplicitHeaderOn,&SX1276LR );
-    SX1276LoRaSetSymbTimeout( 0x3FF,&SX1276LR );	//Maximum - casove okno pro hledani preamble v single rezimu
+    SX1276LoRaSetSymbTimeout(LoRaSettings.RxPacketTimeout,&SX1276LR );	// 
     SX1276LoRaSetPayloadLength( LoRaSettings.PayloadLength,&SX1276LR );	//
 	 
 	 
@@ -120,12 +120,12 @@ void SX1276LoRaInit( void )
 		  SX1276LoRaSetLowDatarateOptimize( false,&SX1276LR );	//pouze pro SF11 a SF12
 	  }
     
-	//SX1276Write(0x1F,230);	//RX Timeout
+	
 	
 	/*AGC AUTO*/
-// 	SX1276Read( REG_LR_MODEMCONFIG3,&SX1276LR.RegModemConfig3 );
-// 	SX1276LR.RegModemConfig3|=0x4;
-// 	SX1276Write( REG_LR_MODEMCONFIG3,SX1276LR.RegModemConfig3 );
+ 	SX1276Read( REG_LR_MODEMCONFIG3,&SX1276LR.RegModemConfig3 );
+ 	SX1276LR.RegModemConfig3|=0x4;
+ 	SX1276Write( REG_LR_MODEMCONFIG3,SX1276LR.RegModemConfig3 );
 	
 #if( ( MODULE_SX1276RF1IAS == 1 ) || ( MODULE_SX1276RF1KAS == 1 ) )
 	

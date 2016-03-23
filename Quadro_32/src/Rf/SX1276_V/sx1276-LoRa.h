@@ -46,7 +46,7 @@ typedef struct sLoRaSettings
  * RF packet definition
  */
 #define RF_BUFFER_SIZE_MAX                          256
-#define RF_BUFFER_SIZE                              100
+#define RF_BUFFER_SIZE                              8
 
 /*!
  * RF state machine
